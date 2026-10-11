@@ -165,10 +165,37 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
     }
+
+    .auth { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: #090d18f2; }
+    .auth[hidden] { display: none; }
+    .auth-card { width: min(380px, 100%); padding: 26px; background: var(--panel); border: 1px solid var(--border); border-radius: 18px; display: flex; flex-direction: column; gap: 8px; }
+    .auth-card h2 { margin: 0; font-size: 22px; letter-spacing: -.5px; }
+    .auth-sub { margin: 0 0 10px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .auth-card label { margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .auth-card input { padding: 12px; color: white; background: #121a2a; border: 1px solid #34415a; border-radius: 11px; outline: none; }
+    .auth-card input:focus { border-color: #6288c4; }
+    .auth-error { min-height: 18px; margin-top: 4px; color: #ff8a7a; font-size: 12px; line-height: 1.5; }
+    .auth-switch { padding: 8px; background: transparent; border: 0; color: var(--blue); font-size: 13px; }
+    .auth-switch[hidden] { display: none; }
+    .profile .auth-switch { margin-left: auto; }
   </style>
 </head>
 
 <body>
+  <div class="auth" id="auth" hidden>
+    <form class="auth-card" id="authForm">
+      <h2 id="authTitle">Inicia sesión</h2>
+      <p class="auth-sub">Entra con tu nombre de usuario. No necesitas correo electrónico.</p>
+      <label for="authUser">Nombre de usuario</label>
+      <input id="authUser" name="username" autocomplete="username" maxlength="20" required>
+      <label for="authPass">Contraseña (mínimo 8 caracteres)</label>
+      <input id="authPass" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="200" required>
+      <div class="auth-error" id="authError" role="alert"></div>
+      <button class="new-chat" id="authSubmit" type="submit">Entrar</button>
+      <button class="auth-switch" id="authSwitch" type="button">¿No tienes cuenta? Crear una</button>
+    </form>
+  </div>
+
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
@@ -190,9 +217,10 @@
         <div class="profile">
           <div class="avatar">O</div>
           <div>
-            <div class="profile-name">Mi espacio</div>
+            <div class="profile-name" id="profileName">Mi espacio</div>
             <div class="profile-type">Versión inicial</div>
           </div>
+          <button class="auth-switch" id="logoutBtn" type="button" hidden>Salir</button>
         </div>
       </div>
     </aside>
@@ -358,6 +386,7 @@
     async function sendMessage(text) {
       const cleanText = text.trim();
       if (!cleanText || sending) return;
+      if (!token) { showAuth(); return; }
 
       if (!activeId) newConversation();
       const conversation = getActive();
@@ -387,10 +416,18 @@
 
         const response = await fetch(ORYA_API, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
           body: JSON.stringify({ messages: payload })
         });
         const data = await response.json();
+
+        if (response.status === 401) {
+          conversation.messages.pop();
+          clearSession();
+          sending = false;
+          sendButton.disabled = false;
+          return;
+        }
 
         if (response.ok && data.reply) {
           reply.text = data.reply;
@@ -438,7 +475,110 @@
       });
     });
 
+    let token = null;
+    let currentUser = null;
+    let authMode = "login";
+    try {
+      token = localStorage.getItem("orya_token");
+      currentUser = localStorage.getItem("orya_user");
+    } catch (e) {}
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const login = mode === "login";
+      $("#authTitle").textContent = login ? "Inicia sesión" : "Crea tu cuenta";
+      $("#authSubmit").textContent = login ? "Entrar" : "Crear cuenta";
+      $("#authSwitch").textContent = login ? "¿No tienes cuenta? Crear una" : "¿Ya tienes cuenta? Iniciar sesión";
+      $("#authPass").autocomplete = login ? "current-password" : "new-password";
+      $("#authError").textContent = "";
+    }
+
+    function showAuth() {
+      $("#auth").hidden = false;
+      $("#authUser").focus();
+    }
+
+    function applyUser() {
+      $("#profileName").textContent = currentUser || "Mi espacio";
+      $("#logoutBtn").hidden = !token;
+      $(".avatar").textContent = currentUser ? currentUser[0].toUpperCase() : "O";
+    }
+
+    function saveSession(newToken, username) {
+      token = newToken;
+      currentUser = username;
+      try {
+        localStorage.setItem("orya_token", token);
+        localStorage.setItem("orya_user", username);
+      } catch (e) {}
+      $("#auth").hidden = true;
+      applyUser();
+    }
+
+    function clearSession() {
+      token = null;
+      currentUser = null;
+      try {
+        localStorage.removeItem("orya_token");
+        localStorage.removeItem("orya_user");
+      } catch (e) {}
+      conversations = [];
+      activeId = null;
+      applyUser();
+      renderHistory();
+      renderMessages();
+      setAuthMode("login");
+      showAuth();
+    }
+
+    $("#authSwitch").addEventListener("click", () => {
+      setAuthMode(authMode === "login" ? "register" : "login");
+    });
+
+    $("#authForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = $("#authSubmit");
+      button.disabled = true;
+      $("#authError").textContent = "";
+      try {
+        const response = await fetch(ORYA_API + (authMode === "login" ? "/login" : "/register"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: $("#authUser").value.trim(), password: $("#authPass").value })
+        });
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (response.ok && data.token) {
+          $("#authPass").value = "";
+          saveSession(data.token, data.username);
+        } else {
+          $("#authError").textContent = data.error || "No se pudo completar la acción (código " + response.status + ").";
+        }
+      } catch (error) {
+        $("#authError").textContent = "No se pudo conectar con el servidor.";
+      }
+      button.disabled = false;
+    });
+
+    $("#logoutBtn").addEventListener("click", async () => {
+      try {
+        await fetch(ORYA_API + "/logout", { method: "POST", headers: { "Authorization": "Bearer " + token } });
+      } catch (e) {}
+      clearSession();
+    });
+
+    async function initAuth() {
+      setAuthMode("login");
+      if (!token) { showAuth(); return; }
+      applyUser();
+      try {
+        const response = await fetch(ORYA_API + "/me", { headers: { "Authorization": "Bearer " + token } });
+        if (response.status === 401) clearSession();
+      } catch (e) {}
+    }
+
     renderHistory();
+    initAuth();
   </script>
 </body>
 </html>
