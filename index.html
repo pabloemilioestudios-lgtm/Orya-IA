@@ -3,33 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101827">
-  <title>Orya IA — Tu espacio inteligente</title>
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Orya IA, tu espacio de inteligencia artificial.">
+  <title>Orya IA — Asistente inteligente</title>
+
   <style>
     :root {
-      --bg: #101827;
-      --panel: #172235;
-      --panel2: #1d2a40;
-      --text: #f4f7fb;
-      --muted: #9eacc1;
-      --orange: #ed873d;
-      --blue: #3698f5;
-      --border: rgba(255,255,255,.09);
+      --bg: #090d18;
+      --panel: #101625;
+      --panel2: #161e30;
+      --border: #273147;
+      --text: #f5f7ff;
+      --muted: #98a5bd;
+      --orange: #ff963d;
+      --blue: #5797ff;
+      --radius: 18px;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      min-height: 100vh;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Arial, sans-serif;
     }
 
-    button, textarea { font: inherit; }
-
+    button, input, textarea { font: inherit; }
     button { cursor: pointer; }
 
     .app {
@@ -39,9 +41,10 @@
 
     .sidebar {
       width: 265px;
-      background: #131e30;
-      border-right: 1px solid var(--border);
+      flex-shrink: 0;
       padding: 22px 16px;
+      background: #0d1220;
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       gap: 24px;
@@ -50,466 +53,652 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 3px 7px;
+      gap: 12px;
+      padding: 4px 5px 12px;
     }
 
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: linear-gradient(145deg, #ffb25b, #e77932);
-      display: grid;
-      place-items: center;
-      color: white;
-      font-size: 24px;
-      font-weight: 800;
+    .brand-logo {
+      width: 47px;
+      height: 47px;
+      border-radius: 12px;
+      object-fit: contain;
+      flex-shrink: 0;
     }
 
     .brand-name {
-      font-family: Georgia, serif;
-      font-size: 26px;
-      font-weight: bold;
+      font-size: 22px;
+      font-weight: 800;
       letter-spacing: -.8px;
     }
 
     .brand-name span { color: var(--orange); }
 
+    .brand-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
     .new-chat {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
       width: 100%;
       padding: 13px;
       color: white;
-      background: linear-gradient(110deg, #e98039, #f39a48);
-      border: 0;
-      border-radius: 12px;
       font-weight: 650;
+      background: linear-gradient(110deg, #ff963d, #f47d42);
+      border: 0;
+      border-radius: 13px;
+      box-shadow: 0 5px 20px #ff963d1c;
     }
+
+    .new-chat:hover { filter: brightness(1.08); }
 
     .section-label {
+      color: #78859d;
       font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 1.3px;
+      padding: 0 10px;
       text-transform: uppercase;
-      letter-spacing: 1.6px;
-      color: var(--muted);
-      padding: 0 8px;
     }
 
-    .history {
-      color: var(--muted);
-      font-size: 13px;
-      padding: 12px 8px;
-      line-height: 1.6;
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .history-item {
+      width: 100%;
+      text-align: left;
+      color: #c4cde0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 11px 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-item:hover,
+    .history-item.active {
+      background: var(--panel2);
+      border-color: var(--border);
+      color: white;
     }
 
     .sidebar-bottom { margin-top: auto; }
 
-    .settings-button {
-      width: 100%;
-      background: transparent;
-      color: var(--text);
-      text-align: left;
-      padding: 13px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 13px 9px;
+      border-top: 1px solid var(--border);
     }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      color: white;
+      background: linear-gradient(135deg, #ff963d, #5c8eff);
+      font-weight: 800;
+    }
+
+    .profile-name { font-size: 13px; font-weight: 650; }
+    .profile-type { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
     .main {
       flex: 1;
       min-width: 0;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
     }
 
     .topbar {
-      min-height: 72px;
-      border-bottom: 1px solid var(--border);
+      height: 70px;
+      flex-shrink: 0;
+      padding: 0 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 15px 27px;
       gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: #0b1020dd;
     }
 
-    .top-title { font-weight: 650; }
-
-    .status {
+    .topbar-title { font-size: 14px; font-weight: 700; }
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
       font-size: 12px;
-      color: #a8d9ff;
-      background: rgba(54,152,245,.12);
-      padding: 8px 11px;
-      border-radius: 30px;
     }
 
-    .workspace {
-      width: 100%;
-      max-width: 850px;
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #f1b75b;
+      border-radius: 50%;
+    }
+
+    .chat {
+      width: min(850px, 100%);
       margin: 0 auto;
-      padding: 45px 25px 28px;
+      padding: 34px 25px 20px;
       flex: 1;
       display: flex;
       flex-direction: column;
     }
 
     .welcome {
-      margin: auto 0 30px;
+      margin: auto 0;
+      padding: 38px 0 45px;
       text-align: center;
     }
 
-    .orb {
-      width: 75px;
-      height: 75px;
-      margin: 0 auto 22px;
-      border-radius: 25px;
+    .welcome-mark {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 24px;
       display: grid;
       place-items: center;
-      font-size: 36px;
-      background: linear-gradient(145deg,
-        rgba(237,135,61,.19), rgba(54,152,245,.19));
-      border: 1px solid var(--border);
+      border: 1px solid #34415a;
+      border-radius: 24px;
+      background: radial-gradient(circle at top left, #ff963d2c, #5797ff17);
+      box-shadow: 0 0 55px #5797ff0b;
     }
 
-    h1 {
-      font-size: clamp(28px, 4vw, 42px);
+    .welcome-mark img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+    }
+
+    .welcome h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 43px);
       letter-spacing: -1.6px;
-      margin: 0 0 13px;
+      line-height: 1.15;
     }
 
-    h1 span {
-      background: linear-gradient(90deg, #ffad59, #68baff);
-      -webkit-background-clip: text;
-      background-clip: text;
+    .welcome h1 span {
+      background: linear-gradient(90deg, var(--orange), #ffbd70, var(--blue));
       color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
     }
 
-    .subtitle {
+    .welcome p {
+      max-width: 440px;
+      margin: 16px auto 0;
       color: var(--muted);
-      line-height: 1.7;
-      max-width: 500px;
-      margin: 0 auto;
       font-size: 14px;
+      line-height: 1.8;
     }
 
     .suggestions {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 11px;
-      margin: 25px 0 28px;
+      max-width: 620px;
+      margin: 29px auto 0;
+      text-align: left;
     }
 
     .suggestion {
-      text-align: left;
+      padding: 15px;
       color: var(--text);
-      background: var(--panel);
+      background: #111828;
       border: 1px solid var(--border);
-      padding: 16px;
       border-radius: 14px;
-      line-height: 1.5;
+      text-align: left;
       transition: border-color .2s, transform .2s;
     }
 
     .suggestion:hover {
-      border-color: var(--blue);
+      border-color: #6587bd;
       transform: translateY(-2px);
     }
 
-    .suggestion strong {
+    .suggestion-icon {
       display: block;
-      font-size: 13px;
-      margin-bottom: 4px;
+      margin-bottom: 10px;
+      font-size: 19px;
     }
 
+    .suggestion strong { display: block; font-size: 13px; }
     .suggestion small {
+      display: block;
+      margin-top: 6px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
+      line-height: 1.5;
     }
 
     .messages {
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-      padding-bottom: 25px;
-    }
-
-    .message {
-      padding: 16px 18px;
-      border-radius: 15px;
-      line-height: 1.7;
-      font-size: 14px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .user-message {
-      align-self: flex-end;
-      max-width: 85%;
-      background: #263a55;
-    }
-
-    .assistant-message {
-      align-self: stretch;
-      background: var(--panel);
-      border: 1px solid var(--border);
-    }
-
-    .message-label {
-      display: block;
-      color: var(--orange);
-      font-weight: 700;
-      font-size: 12px;
-      margin-bottom: 7px;
-    }
-
-    .composer {
-      margin-top: auto;
-      border: 1px solid #35435a;
-      background: var(--panel);
-      border-radius: 18px;
-      padding: 13px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.12);
-    }
-
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 52px;
-      max-height: 180px;
-      resize: vertical;
-      background: transparent;
-      border: 0;
-      outline: none;
-      color: var(--text);
-      padding: 6px;
-      font-size: 14px;
-    }
-
-    textarea::placeholder { color: #8292aa; }
-
-    .composer-footer {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding-top: 8px;
+      flex-direction: column;
+      gap: 25px;
+      padding: 15px 0 30px;
     }
 
-    .composer-hint {
+    .message { display: flex; gap: 12px; align-items: flex-start; }
+    .message.user { justify-content: flex-end; }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--panel2);
+      color: var(--orange);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .message-body { max-width: min(680px, 85%); min-width: 0; }
+    .message-label {
+      margin: 2px 0 8px;
       color: var(--muted);
       font-size: 11px;
     }
 
-    .send {
-      background: var(--blue);
-      color: white;
-      border: 0;
-      border-radius: 11px;
-      padding: 11px 16px;
-      font-weight: 650;
+    .message-text {
+      font-size: 14px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
 
-    .send:hover { background: #58a9f7; }
+    .message.user .message-text {
+      padding: 12px 15px;
+      background: #1b2b45;
+      border: 1px solid #2b4263;
+      border-radius: 16px 16px 4px 16px;
+    }
+
+    .composer-wrap {
+      position: sticky;
+      bottom: 0;
+      padding: 15px 0 8px;
+      background: linear-gradient(transparent, var(--bg) 18%);
+    }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 10px;
+      background: #121a2a;
+      border: 1px solid #34415a;
+      border-radius: 18px;
+      box-shadow: 0 12px 40px #0003;
+    }
+
+    .composer:focus-within { border-color: #6288c4; }
+
+    .composer textarea {
+      flex: 1;
+      min-width: 0;
+      max-height: 180px;
+      min-height: 44px;
+      padding: 12px 9px;
+      resize: none;
+      color: white;
+      background: transparent;
+      border: 0;
+      outline: none;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .composer textarea::placeholder { color: #78859d; }
+
+    .send-button {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      border: 0;
+      border-radius: 13px;
+      color: #101625;
+      background: var(--orange);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .send-button:hover { filter: brightness(1.1); }
+    .send-button:disabled { opacity: .45; cursor: not-allowed; }
 
     .disclaimer {
+      margin: 12px 0 0;
       text-align: center;
-      color: #8290a4;
+      color: #77849a;
       font-size: 10px;
-      line-height: 1.6;
-      padding: 13px 0 0;
+      line-height: 1.7;
     }
 
     .mobile-menu { display: none; }
+    .empty-history { padding: 8px 10px; color: #7e8aa0; font-size: 12px; }
 
     @media (max-width: 700px) {
       .sidebar {
         position: fixed;
         z-index: 10;
         inset: 0 auto 0 0;
+        width: min(290px, 85vw);
         transform: translateX(-105%);
-        transition: transform .25s;
-        box-shadow: 15px 0 50px rgba(0,0,0,.25);
+        transition: transform .22s ease;
+        box-shadow: 20px 0 60px #0006;
       }
 
       .sidebar.open { transform: translateX(0); }
-
       .mobile-menu {
-        display: inline-block;
-        background: transparent;
+        display: inline-grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        color: white;
+        background: var(--panel2);
         border: 1px solid var(--border);
-        color: var(--text);
-        padding: 8px 11px;
-        border-radius: 9px;
+        border-radius: 10px;
       }
 
-      .topbar { padding: 13px 15px; }
-      .workspace { padding: 30px 16px 20px; }
-      .suggestions { grid-template-columns: 1fr; }
-      .welcome { margin-top: 35px; }
-      .status { font-size: 10px; }
+      .topbar { height: 62px; padding: 0 15px; }
+      .topbar-left { display: flex; align-items: center; gap: 11px; }
+      .chat { padding: 20px 15px 12px; }
+      .welcome { padding: 35px 0; }
+      .welcome p { font-size: 13px; }
+      .suggestions { grid-template-columns: 1fr; margin-top: 23px; }
+      .suggestion { padding: 13px; }
+      .composer-wrap { padding-bottom: 5px; }
+      .disclaimer { font-size: 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <div class="brand-mark">O</div>
-        <div class="brand-name">orya <span>IA</span></div>
+        <img class="brand-logo"
+             src="./Logo%20Torre%20con%20Rio%20(1).png"
+             alt="Logo de Orya IA"
+             onerror="this.onerror=null;this.src='./Logo%20Torre%20con%20Rio.png'">
+        <div>
+          <div class="brand-name">Orya <span>IA</span></div>
+          <div class="brand-subtitle">Asistente inteligente</div>
+        </div>
       </div>
 
-      <button class="new-chat" id="newChat">＋ Nueva conversación</button>
+      <button class="new-chat" id="newChat">
+        <span>＋</span> Nueva conversación
+      </button>
 
       <div>
         <div class="section-label">Tu espacio</div>
-        <div class="history" id="history">
-          Tus conversaciones aparecerán aquí cuando conectemos la memoria.
+        <div class="history-list" id="historyList">
+          <div class="empty-history">Tus conversaciones aparecerán aquí.</div>
         </div>
       </div>
 
       <div class="sidebar-bottom">
-        <button class="settings-button" id="settings">
-          ⚙️ &nbsp; Configuración
-        </button>
+        <div class="profile">
+          <div class="avatar">O</div>
+          <div>
+            <div class="profile-name">Mi espacio</div>
+            <div class="profile-type">Versión inicial</div>
+          </div>
+        </div>
       </div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="mobile-menu" id="menuButton"
-            aria-label="Abrir menú">☰</button>
-          <div class="top-title">Tu espacio inteligente</div>
+        <div class="topbar-left">
+          <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
+          <div class="topbar-title">Orya IA <span style="color:var(--muted)">/ Chat</span></div>
         </div>
-        <div class="status">✦ Vista previa</div>
+        <div class="topbar-status">
+          <span class="status-dot"></span>
+          <span>Interfaz de prueba</span>
+        </div>
       </header>
 
-      <section class="workspace">
+      <section class="chat">
         <div class="welcome" id="welcome">
-          <div class="orb">✦</div>
-          <h1>Hola, ¿qué vamos a <span>descubrir?</span></h1>
-          <p class="subtitle">
-            Un espacio para aprender, investigar ideas y explorar nuevas
-            posibilidades. Orya está comenzando su camino contigo.
+          <div class="welcome-mark">
+            <img src="./Logo%20Torre%20con%20Rio%20(1).png"
+                 alt="Orya IA"
+                 onerror="this.onerror=null;this.src='./Logo%20Torre%20con%20Rio.png'">
+          </div>
+
+          <h1>Hola, ¿qué vamos a<br><span>crear hoy?</span></h1>
+          <p>
+            Bienvenido a Orya IA. Un espacio para explorar ideas,
+            aprender, investigar y desarrollar nuevos proyectos.
           </p>
 
           <div class="suggestions">
-            <button class="suggestion" data-prompt="Explícame un tema difícil de forma sencilla.">
-              <strong>✧ Aprender algo nuevo</strong>
-              <small>Explicaciones claras y sencillas</small>
+            <button class="suggestion" data-prompt="Ayúdame a desarrollar una idea de proyecto desde cero.">
+              <span class="suggestion-icon">✦</span>
+              <strong>Crear algo nuevo</strong>
+              <small>Convierte una idea en un proyecto.</small>
             </button>
-            <button class="suggestion" data-prompt="Ayúdame a investigar un tema y dime qué fuentes debería consultar.">
-              <strong>⌕ Investigar un tema</strong>
-              <small>Preguntas, datos y fuentes</small>
+            <button class="suggestion" data-prompt="Explícame un tema difícil de forma sencilla y con ejemplos.">
+              <span class="suggestion-icon">◈</span>
+              <strong>Aprender algo</strong>
+              <small>Entiende temas paso a paso.</small>
             </button>
-            <button class="suggestion" data-prompt="Ayúdame a organizar una idea y convertirla en un plan.">
-              <strong>◇ Organizar mis ideas</strong>
-              <small>Pasos para avanzar</small>
+            <button class="suggestion" data-prompt="Ayúdame a organizar un plan para alcanzar un objetivo.">
+              <span class="suggestion-icon">◎</span>
+              <strong>Planificar</strong>
+              <small>Ordena tareas y próximos pasos.</small>
             </button>
-            <button class="suggestion" data-prompt="Ayúdame a crear una aplicación desde cero.">
-              <strong>⌘ Crear un proyecto</strong>
-              <small>Del concepto a la aplicación</small>
+            <button class="suggestion" data-prompt="Dame ideas creativas para una página web moderna.">
+              <span class="suggestion-icon">⌘</span>
+              <strong>Diseñar una web</strong>
+              <small>Explora ideas para tu próximo sitio.</small>
             </button>
           </div>
         </div>
 
         <div class="messages" id="messages" aria-live="polite"></div>
 
-        <form class="composer" id="chatForm">
-          <textarea id="prompt" rows="2"
-            placeholder="Pregúntale algo a Orya..."
-            aria-label="Escribe tu mensaje"></textarea>
-          <div class="composer-footer">
-            <span class="composer-hint">Tu curiosidad es el comienzo.</span>
-            <button class="send" type="submit">Enviar ↑</button>
-          </div>
-        </form>
-
-        <div class="disclaimer">
-          Vista previa de Orya IA. Las respuestas automáticas y las cuentas
-          estarán disponibles cuando conectemos los servicios correspondientes.
+        <div class="composer-wrap">
+          <form class="composer" id="chatForm">
+            <textarea id="prompt" rows="1"
+              aria-label="Escribe tu mensaje"
+              placeholder="Escribe tu mensaje a Orya IA..."></textarea>
+            <button class="send-button" id="sendButton" type="submit"
+              aria-label="Enviar mensaje">↑</button>
+          </form>
+          <p class="disclaimer">
+            Orya IA · Interfaz inicial. Las respuestas inteligentes requieren conectar un servicio de IA.
+          </p>
         </div>
       </section>
     </main>
   </div>
 
   <script>
-    const promptInput = document.getElementById("prompt");
-    const chatForm = document.getElementById("chatForm");
-    const messages = document.getElementById("messages");
-    const welcome = document.getElementById("welcome");
-    const sidebar = document.getElementById("sidebar");
+    const $ = (selector) => document.querySelector(selector);
 
-    function addMessage(text, type, label) {
-      const bubble = document.createElement("div");
-      bubble.className = "message " + type;
+    const form = $("#chatForm");
+    const promptInput = $("#prompt");
+    const messages = $("#messages");
+    const welcome = $("#welcome");
+    const sendButton = $("#sendButton");
+    const historyList = $("#historyList");
+    const sidebar = $("#sidebar");
 
-      if (label) {
-        const heading = document.createElement("span");
-        heading.className = "message-label";
-        heading.textContent = label;
-        bubble.appendChild(heading);
+    let conversations = [];
+    let activeId = null;
+
+    function newConversation() {
+      activeId = (Date.now().toString(36) + Math.random().toString(36).slice(2, 7));
+      conversations.unshift({
+        id: activeId,
+        title: "Nueva conversación",
+        messages: []
+      });
+
+      renderHistory();
+      renderMessages();
+      sidebar.classList.remove("open");
+      promptInput.focus();
+    }
+
+    function getActive() {
+      return conversations.find(item => item.id === activeId);
+    }
+
+    function renderHistory() {
+      historyList.replaceChildren();
+
+      if (!conversations.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-history";
+        empty.textContent = "Tus conversaciones aparecerán aquí.";
+        historyList.appendChild(empty);
+        return;
       }
 
-      const content = document.createElement("div");
-      content.textContent = text;
-      bubble.appendChild(content);
-      messages.appendChild(bubble);
+      conversations.forEach(conversation => {
+        const button = document.createElement("button");
+        button.className = "history-item" +
+          (conversation.id === activeId ? " active" : "");
+        button.textContent = conversation.title;
+        button.title = conversation.title;
+        button.addEventListener("click", () => {
+          activeId = conversation.id;
+          renderHistory();
+          renderMessages();
+          sidebar.classList.remove("open");
+        });
+        historyList.appendChild(button);
+      });
+    }
+
+    function renderMessages() {
+      messages.replaceChildren();
+      const conversation = getActive();
+      const hasMessages = conversation && conversation.messages.length > 0;
+      welcome.hidden = Boolean(hasMessages);
+
+      if (!hasMessages) return;
+
+      conversation.messages.forEach(message => {
+        const row = document.createElement("div");
+        row.className = "message " + (message.role === "user" ? "user" : "assistant");
+
+        if (message.role !== "user") {
+          const avatar = document.createElement("div");
+          avatar.className = "message-avatar";
+          avatar.textContent = "O";
+          row.appendChild(avatar);
+        }
+
+        const body = document.createElement("div");
+        body.className = "message-body";
+
+        const label = document.createElement("div");
+        label.className = "message-label";
+        label.textContent = message.role === "user" ? "Tú" : "Orya IA";
+
+        const text = document.createElement("div");
+        text.className = "message-text";
+        text.textContent = message.text;
+
+        body.append(label, text);
+        row.appendChild(body);
+        messages.appendChild(row);
+      });
+
+      requestAnimationFrame(() => {
+        messages.scrollIntoView({ block: "end", behavior: "smooth" });
+      });
     }
 
     function sendMessage(text) {
-      const value = (text || promptInput.value).trim();
-      if (!value) return;
+      const cleanText = text.trim();
+      if (!cleanText) return;
 
-      welcome.style.display = "none";
-      messages.style.display = "flex";
+      if (!activeId) newConversation();
+      const conversation = getActive();
+      if (!conversation) return;
 
-      addMessage(value, "user-message", "");
-      addMessage(
-        "¡Gracias por probar Orya IA! Esta es nuestra primera versión visual. " +
-        "Todavía no tengo conectado un motor de inteligencia artificial ni " +
-        "búsquedas web. El siguiente paso será conectar esos servicios para " +
-        "que pueda responder preguntas reales y consultar fuentes.",
-        "assistant-message",
-        "Orya IA · Vista previa"
-      );
+      conversation.messages.push({ role: "user", text: cleanText });
 
+      if (conversation.title === "Nueva conversación") {
+        conversation.title = cleanText.length > 32
+          ? cleanText.slice(0, 32) + "…"
+          : cleanText;
+      }
+
+      conversation.messages.push({
+        role: "assistant",
+        text: "Tu mensaje está en esta interfaz de prueba. Para darte una respuesta real, necesito que conectemos Orya IA a un servicio de inteligencia artificial. En el siguiente paso podemos preparar esa conexión con un plan gratuito."
+      });
+
+      renderHistory();
+      renderMessages();
       promptInput.value = "";
-      sidebar.classList.remove("open");
+      promptInput.style.height = "auto";
       promptInput.focus();
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
 
-    chatForm.addEventListener("submit", function(event) {
+    form.addEventListener("submit", event => {
       event.preventDefault();
-      sendMessage();
+      sendMessage(promptInput.value);
     });
 
-    document.querySelectorAll("[data-prompt]").forEach(function(button) {
-      button.addEventListener("click", function() {
-        sendMessage(button.dataset.prompt);
-      });
+    promptInput.addEventListener("input", () => {
+      promptInput.style.height = "auto";
+      promptInput.style.height = Math.min(promptInput.scrollHeight, 180) + "px";
     });
 
-    document.getElementById("newChat").addEventListener("click", function() {
-      messages.replaceChildren();
-      messages.style.display = "none";
-      welcome.style.display = "block";
-      promptInput.value = "";
-      sidebar.classList.remove("open");
+    promptInput.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
     });
 
-    document.getElementById("menuButton").addEventListener("click", function() {
+    $("#newChat").addEventListener("click", newConversation);
+
+    $("#mobileMenu").addEventListener("click", () => {
       sidebar.classList.toggle("open");
     });
 
-    document.getElementById("settings").addEventListener("click", function() {
-      alert("La configuración de temas y personalidad llegará en una próxima versión.");
+    document.querySelectorAll("[data-prompt]").forEach(button => {
+      button.addEventListener("click", () => {
+        promptInput.value = button.dataset.prompt;
+        promptInput.focus();
+        promptInput.dispatchEvent(new Event("input"));
+      });
     });
 
-    promptInput.addEventListener("keydown", function(event) {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        chatForm.requestSubmit();
-      }
-    });
+    renderHistory();
   </script>
 </body>
 </html>
