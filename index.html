@@ -1,1 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>Orya IA — Tu espacio inteligente</title>
+  <style>
+    :root {
+      --bg: #101827;
+      --panel: #172235;
+      --panel2: #1d2a40;
+      --text: #f4f7fb;
+      --muted: #9eacc1;
+      --orange: #ed873d;
+      --blue: #3698f5;
+      --border: rgba(255,255,255,.09);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, textarea { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 265px;
+      background: #131e30;
+      border-right: 1px solid var(--border);
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 3px 7px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #ffb25b, #e77932);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-family: Georgia, serif;
+      font-size: 26px;
+      font-weight: bold;
+      letter-spacing: -.8px;
+    }
+
+    .brand-name span { color: var(--orange); }
+
+    .new-chat {
+      width: 100%;
+      padding: 13px;
+      color: white;
+      background: linear-gradient(110deg, #e98039, #f39a48);
+      border: 0;
+      border-radius: 12px;
+      font-weight: 650;
+    }
+
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      color: var(--muted);
+      padding: 0 8px;
+    }
+
+    .history {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 12px 8px;
+      line-height: 1.6;
+    }
+
+    .sidebar-bottom { margin-top: auto; }
+
+    .settings-button {
+      width: 100%;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      min-height: 72px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 27px;
+      gap: 12px;
+    }
+
+    .top-title { font-weight: 650; }
+
+    .status {
+      font-size: 12px;
+      color: #a8d9ff;
+      background: rgba(54,152,245,.12);
+      padding: 8px 11px;
+      border-radius: 30px;
+    }
+
+    .workspace {
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 45px 25px 28px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .welcome {
+      margin: auto 0 30px;
+      text-align: center;
+    }
+
+    .orb {
+      width: 75px;
+      height: 75px;
+      margin: 0 auto 22px;
+      border-radius: 25px;
+      display: grid;
+      place-items: center;
+      font-size: 36px;
+      background: linear-gradient(145deg,
+        rgba(237,135,61,.19), rgba(54,152,245,.19));
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -1.6px;
+      margin: 0 0 13px;
+    }
+
+    h1 span {
+      background: linear-gradient(90deg, #ffad59, #68baff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 500px;
+      margin: 0 auto;
+      font-size: 14px;
+    }
+
+    .suggestions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+      margin: 25px 0 28px;
+    }
+
+    .suggestion {
+      text-align: left;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 14px;
+      line-height: 1.5;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .suggestion:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    .suggestion strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .suggestion small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .messages {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      padding-bottom: 25px;
+    }
+
+    .message {
+      padding: 16px 18px;
+      border-radius: 15px;
+      line-height: 1.7;
+      font-size: 14px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .user-message {
+      align-self: flex-end;
+      max-width: 85%;
+      background: #263a55;
+    }
+
+    .assistant-message {
+      align-self: stretch;
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    .message-label {
+      display: block;
+      color: var(--orange);
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .composer {
+      margin-top: auto;
+      border: 1px solid #35435a;
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 13px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.12);
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 52px;
+      max-height: 180px;
+      resize: vertical;
+      background: transparent;
+      border: 0;
+      outline: none;
+      color: var(--text);
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    textarea::placeholder { color: #8292aa; }
+
+    .composer-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 8px;
+    }
+
+    .composer-hint {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .send {
+      background: var(--blue);
+      color: white;
+      border: 0;
+      border-radius: 11px;
+      padding: 11px 16px;
+      font-weight: 650;
+    }
+
+    .send:hover { background: #58a9f7; }
+
+    .disclaimer {
+      text-align: center;
+      color: #8290a4;
+      font-size: 10px;
+      line-height: 1.6;
+      padding: 13px 0 0;
+    }
+
+    .mobile-menu { display: none; }
+
+    @media (max-width: 700px) {
+      .sidebar {
+        position: fixed;
+        z-index: 10;
+        inset: 0 auto 0 0;
+        transform: translateX(-105%);
+        transition: transform .25s;
+        box-shadow: 15px 0 50px rgba(0,0,0,.25);
+      }
+
+      .sidebar.open { transform: translateX(0); }
+
+      .mobile-menu {
+        display: inline-block;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 11px;
+        border-radius: 9px;
+      }
+
+      .topbar { padding: 13px 15px; }
+      .workspace { padding: 30px 16px 20px; }
+      .suggestions { grid-template-columns: 1fr; }
+      .welcome { margin-top: 35px; }
+      .status { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">O</div>
+        <div class="brand-name">orya <span>IA</span></div>
+      </div>
+
+      <button class="new-chat" id="newChat">＋ Nueva conversación</button>
+
+      <div>
+        <div class="section-label">Tu espacio</div>
+        <div class="history" id="history">
+          Tus conversaciones aparecerán aquí cuando conectemos la memoria.
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="settings-button" id="settings">
+          ⚙️ &nbsp; Configuración
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="mobile-menu" id="menuButton"
+            aria-label="Abrir menú">☰</button>
+          <div class="top-title">Tu espacio inteligente</div>
+        </div>
+        <div class="status">✦ Vista previa</div>
+      </header>
+
+      <section class="workspace">
+        <div class="welcome" id="welcome">
+          <div class="orb">✦</div>
+          <h1>Hola, ¿qué vamos a <span>descubrir?</span></h1>
+          <p class="subtitle">
+            Un espacio para aprender, investigar ideas y explorar nuevas
+            posibilidades. Orya está comenzando su camino contigo.
+          </p>
+
+          <div class="suggestions">
+            <button class="suggestion" data-prompt="Explícame un tema difícil de forma sencilla.">
+              <strong>✧ Aprender algo nuevo</strong>
+              <small>Explicaciones claras y sencillas</small>
+            </button>
+            <button class="suggestion" data-prompt="Ayúdame a investigar un tema y dime qué fuentes debería consultar.">
+              <strong>⌕ Investigar un tema</strong>
+              <small>Preguntas, datos y fuentes</small>
+            </button>
+            <button class="suggestion" data-prompt="Ayúdame a organizar una idea y convertirla en un plan.">
+              <strong>◇ Organizar mis ideas</strong>
+              <small>Pasos para avanzar</small>
+            </button>
+            <button class="suggestion" data-prompt="Ayúdame a crear una aplicación desde cero.">
+              <strong>⌘ Crear un proyecto</strong>
+              <small>Del concepto a la aplicación</small>
+            </button>
+          </div>
+        </div>
+
+        <div class="messages" id="messages" aria-live="polite"></div>
+
+        <form class="composer" id="chatForm">
+          <textarea id="prompt" rows="2"
+            placeholder="Pregúntale algo a Orya..."
+            aria-label="Escribe tu mensaje"></textarea>
+          <div class="composer-footer">
+            <span class="composer-hint">Tu curiosidad es el comienzo.</span>
+            <button class="send" type="submit">Enviar ↑</button>
+          </div>
+        </form>
+
+        <div class="disclaimer">
+          Vista previa de Orya IA. Las respuestas automáticas y las cuentas
+          estarán disponibles cuando conectemos los servicios correspondientes.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const promptInput = document.getElementById("prompt");
+    const chatForm = document.getElementById("chatForm");
+    const messages = document.getElementById("messages");
+    const welcome = document.getElementById("welcome");
+    const sidebar = document.getElementById("sidebar");
+
+    function addMessage(text, type, label) {
+      const bubble = document.createElement("div");
+      bubble.className = "message " + type;
+
+      if (label) {
+        const heading = document.createElement("span");
+        heading.className = "message-label";
+        heading.textContent = label;
+        bubble.appendChild(heading);
+      }
+
+      const content = document.createElement("div");
+      content.textContent = text;
+      bubble.appendChild(content);
+      messages.appendChild(bubble);
+    }
+
+    function sendMessage(text) {
+      const value = (text || promptInput.value).trim();
+      if (!value) return;
+
+      welcome.style.display = "none";
+      messages.style.display = "flex";
+
+      addMessage(value, "user-message", "");
+      addMessage(
+        "¡Gracias por probar Orya IA! Esta es nuestra primera versión visual. " +
+        "Todavía no tengo conectado un motor de inteligencia artificial ni " +
+        "búsquedas web. El siguiente paso será conectar esos servicios para " +
+        "que pueda responder preguntas reales y consultar fuentes.",
+        "assistant-message",
+        "Orya IA · Vista previa"
+      );
+
+      promptInput.value = "";
+      sidebar.classList.remove("open");
+      promptInput.focus();
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    chatForm.addEventListener("submit", function(event) {
+      event.preventDefault();
+      sendMessage();
+    });
+
+    document.querySelectorAll("[data-prompt]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        sendMessage(button.dataset.prompt);
+      });
+    });
+
+    document.getElementById("newChat").addEventListener("click", function() {
+      messages.replaceChildren();
+      messages.style.display = "none";
+      welcome.style.display = "block";
+      promptInput.value = "";
+      sidebar.classList.remove("open");
+    });
+
+    document.getElementById("menuButton").addEventListener("click", function() {
+      sidebar.classList.toggle("open");
+    });
+
+    document.getElementById("settings").addEventListener("click", function() {
+      alert("La configuración de temas y personalidad llegará en una próxima versión.");
+    });
+
+    promptInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+  </script>
+</body>
+</html>
+
 
