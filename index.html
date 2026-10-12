@@ -195,6 +195,10 @@
     .auth-card select:focus, .auth-card textarea:focus { border-color: #6288c4; }
     .settings-card { max-height: 92vh; overflow-y: auto; }
     #settingsBtn { margin-left: auto; font-size: 18px; }
+
+    .web-toggle { width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--border2); border-radius: 13px; background: transparent; color: var(--muted); font-size: 18px; }
+    .web-toggle[aria-pressed="true"] { border-color: var(--orange); background: color-mix(in srgb, var(--orange) 18%, transparent); color: var(--text); }
+    .message-text a { color: var(--blue); }
   </style>
 </head>
 
@@ -319,6 +323,7 @@
         <div class="composer-wrap">
           <form class="composer" id="chatForm">
             <textarea id="prompt" rows="1" aria-label="Escribe tu mensaje" placeholder="Escribe tu mensaje a Orya IA..."></textarea>
+            <button class="web-toggle" id="webToggle" type="button" aria-pressed="false" title="Buscar en Wikipedia antes de responder" aria-label="Buscar en Wikipedia antes de responder">🌐</button>
             <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensaje">↑</button>
           </form>
           <p class="disclaimer">Orya IA puede equivocarse. Verifica la información importante. Tus conversaciones se guardan en tu cuenta.</p>
@@ -424,7 +429,7 @@
 
         const text = document.createElement("div");
         text.className = "message-text";
-        text.textContent = message.text;
+        appendLinkified(text, message.text);
 
         body.append(label, text);
         row.appendChild(body);
@@ -450,7 +455,7 @@
         conversation.title = cleanText.length > 32 ? cleanText.slice(0, 32) + "…" : cleanText;
       }
 
-      const reply = { role: "assistant", text: "Pensando…", pending: true };
+      const reply = { role: "assistant", text: webSearch ? "Buscando en Wikipedia y pensando…" : "Pensando…", pending: true };
       conversation.messages.push(reply);
 
       promptInput.value = "";
@@ -465,7 +470,7 @@
         const response = await fetch(ORYA_API + "/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText })
+          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch })
         });
         const data = await response.json();
 
@@ -652,6 +657,31 @@
       }
       button.disabled = false;
     });
+
+    let webSearch = false;
+    $("#webToggle").addEventListener("click", () => {
+      webSearch = !webSearch;
+      $("#webToggle").setAttribute("aria-pressed", String(webSearch));
+    });
+
+    function appendLinkified(element, str) {
+      const pattern = /https?:\/\/[^\s]+/g;
+      let last = 0;
+      let match;
+      while ((match = pattern.exec(str)) !== null) {
+        const url = match[0].replace(/[.,;:]+$/, "");
+        if (match.index > last) element.append(document.createTextNode(str.slice(last, match.index)));
+        const link = document.createElement("a");
+        link.href = url;
+        link.textContent = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        element.append(link);
+        last = match.index + url.length;
+        pattern.lastIndex = last;
+      }
+      if (last < str.length) element.append(document.createTextNode(str.slice(last)));
+    }
 
     function setAuthMode(mode) {
       authMode = mode;
