@@ -265,7 +265,7 @@
             <textarea id="prompt" rows="1" aria-label="Escribe tu mensaje" placeholder="Escribe tu mensaje a Orya IA..."></textarea>
             <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensaje">↑</button>
           </form>
-          <p class="disclaimer">Orya IA puede equivocarse. Verifica la información importante. Las conversaciones aún no se guardan al recargar.</p>
+          <p class="disclaimer">Orya IA puede equivocarse. Verifica la información importante. Tus conversaciones se guardan en tu cuenta.</p>
         </div>
       </section>
     </main>
@@ -306,8 +306,10 @@
     let sending = false;
 
     function newConversation() {
-      activeId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-      conversations.unshift({ id: activeId, title: "Nueva conversación", messages: [] });
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      activeId = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+      conversations.unshift({ id: activeId, title: "Nueva conversación", messages: [], loaded: true });
       renderHistory();
       renderMessages();
       sidebar.classList.remove("open");
@@ -333,12 +335,7 @@
         button.className = "history-item" + (conversation.id === activeId ? " active" : "");
         button.textContent = conversation.title;
         button.title = conversation.title;
-        button.addEventListener("click", () => {
-          activeId = conversation.id;
-          renderHistory();
-          renderMessages();
-          sidebar.classList.remove("open");
-        });
+        button.addEventListener("click", () => openConversation(conversation.id));
         historyList.appendChild(button);
       });
     }
@@ -409,15 +406,10 @@
       sendButton.disabled = true;
 
       try {
-        const payload = conversation.messages
-          .filter(m => !m.pending && !m.error)
-          .slice(-30)
-          .map(m => ({ role: m.role, content: m.text }));
-
-        const response = await fetch(ORYA_API, {
+        const response = await fetch(ORYA_API + "/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ messages: payload })
+          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText })
         });
         const data = await response.json();
 
@@ -483,6 +475,40 @@
       currentUser = localStorage.getItem("orya_user");
     } catch (e) {}
 
+    async function loadConversations() {
+      try {
+        const response = await fetch(ORYA_API + "/conversations", { headers: { "Authorization": "Bearer " + token } });
+        if (response.status === 401) { clearSession(); return; }
+        const data = await response.json();
+        conversations = (data.conversations || []).map(c => ({ id: c.id, title: c.title, messages: [], loaded: false }));
+        activeId = null;
+        renderHistory();
+        renderMessages();
+      } catch (e) {}
+    }
+
+    async function openConversation(id) {
+      activeId = id;
+      sidebar.classList.remove("open");
+      const conversation = getActive();
+      if (conversation && !conversation.loaded) {
+        conversation.messages = [{ role: "assistant", text: "Cargando…", pending: true }];
+        renderHistory();
+        renderMessages();
+        try {
+          const response = await fetch(ORYA_API + "/conversations/" + id, { headers: { "Authorization": "Bearer " + token } });
+          if (response.status === 401) { clearSession(); return; }
+          const data = await response.json();
+          conversation.messages = (data.messages || []).map(m => ({ role: m.role, text: m.content }));
+          conversation.loaded = true;
+        } catch (e) {
+          conversation.messages = [{ role: "assistant", text: "No se pudo cargar la conversación.", error: true }];
+        }
+      }
+      renderHistory();
+      renderMessages();
+    }
+
     function setAuthMode(mode) {
       authMode = mode;
       const login = mode === "login";
@@ -513,6 +539,7 @@
       } catch (e) {}
       $("#auth").hidden = true;
       applyUser();
+      loadConversations();
     }
 
     function clearSession() {
@@ -571,10 +598,7 @@
       setAuthMode("login");
       if (!token) { showAuth(); return; }
       applyUser();
-      try {
-        const response = await fetch(ORYA_API + "/me", { headers: { "Authorization": "Bearer " + token } });
-        if (response.status === 401) clearSession();
-      } catch (e) {}
+      loadConversations();
     }
 
     renderHistory();
