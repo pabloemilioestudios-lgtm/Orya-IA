@@ -196,9 +196,15 @@
     .settings-card { max-height: 92vh; overflow-y: auto; }
     #settingsBtn { margin-left: auto; font-size: 18px; }
 
-    .web-toggle { width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--border2); border-radius: 13px; background: transparent; color: var(--muted); font-size: 18px; }
+    .web-toggle, .tool-btn { width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--border2); border-radius: 13px; background: transparent; color: var(--muted); font-size: 18px; }
     .web-toggle[aria-pressed="true"] { border-color: var(--orange); background: color-mix(in srgb, var(--orange) 18%, transparent); color: var(--text); }
     .message-text a { color: var(--blue); }
+    .attach-chip { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin: 0 0 8px; padding: 6px 10px; background: var(--card); border: 1px solid var(--border2); border-radius: 10px; font-size: 12px; color: var(--text2); }
+    .attach-chip[hidden] { display: none; }
+    .attach-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attach-chip button { background: transparent; border: 0; color: var(--muted); font-size: 14px; }
+    #camVideo { width: 100%; border-radius: 12px; background: #000; max-height: 50vh; }
+    @media (max-width: 700px) { .web-toggle, .tool-btn, .send-button { width: 38px; height: 38px; } }
   </style>
 </head>
 
@@ -253,6 +259,16 @@
       <button class="new-chat" id="settingsSave" type="submit">Guardar</button>
       <button class="auth-switch" id="settingsClose" type="button">Cerrar</button>
     </form>
+  </div>
+
+  <div class="auth" id="cameraModal" hidden>
+    <div class="auth-card">
+      <h2>Tomar foto</h2>
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="auth-error" id="camMsg" role="alert"></div>
+      <button class="new-chat" id="camShot" type="button">Tomar foto</button>
+      <button class="auth-switch" id="camClose" type="button">Cerrar</button>
+    </div>
   </div>
 
   <div class="app">
@@ -321,8 +337,15 @@
         <div class="messages" id="messages" aria-live="polite"></div>
 
         <div class="composer-wrap">
+          <div class="attach-chip" id="attachChip" hidden>
+            <span id="attachName"></span>
+            <button id="attachRemove" type="button" aria-label="Quitar adjunto">✕</button>
+          </div>
+          <input type="file" id="fileInput" hidden accept="image/*,.txt,.md,.csv,.json,.html,.css,.js,.py,.xml,.log,text/plain">
           <form class="composer" id="chatForm">
             <textarea id="prompt" rows="1" aria-label="Escribe tu mensaje" placeholder="Escribe tu mensaje a Orya IA..."></textarea>
+            <button class="tool-btn" id="attachBtn" type="button" title="Adjuntar imagen o archivo de texto" aria-label="Adjuntar archivo">📎</button>
+            <button class="tool-btn" id="cameraBtn" type="button" title="Tomar una foto" aria-label="Tomar una foto">📷</button>
             <button class="web-toggle" id="webToggle" type="button" aria-pressed="false" title="Buscar en Wikipedia antes de responder" aria-label="Buscar en Wikipedia antes de responder">🌐</button>
             <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensaje">↑</button>
           </form>
@@ -429,7 +452,7 @@
 
         const text = document.createElement("div");
         text.className = "message-text";
-        appendLinkified(text, message.text);
+        appendLinkified(text, displayText(message.text));
 
         body.append(label, text);
         row.appendChild(body);
@@ -442,7 +465,8 @@
     }
 
     async function sendMessage(text) {
-      const cleanText = text.trim();
+      const attached = attachment;
+      const cleanText = text.trim() || (attached ? (attached.kind === "image" ? "Describe esta imagen." : "Analiza este archivo y dame un resumen.") : "");
       if (!cleanText || sending) return;
       if (!token) { showAuth(); return; }
 
@@ -450,7 +474,11 @@
       const conversation = getActive();
       if (!conversation) return;
 
-      conversation.messages.push({ role: "user", text: cleanText });
+      const shownText = attached
+        ? cleanText + "\n\n" + (attached.kind === "image" ? "🖼️ [imagen adjunta]" : "📎 " + attached.name)
+        : cleanText;
+      conversation.messages.push({ role: "user", text: shownText });
+      clearAttachment();
       if (conversation.title === "Nueva conversación") {
         conversation.title = cleanText.length > 32 ? cleanText.slice(0, 32) + "…" : cleanText;
       }
@@ -470,7 +498,7 @@
         const response = await fetch(ORYA_API + "/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch })
+          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch, attachment: attached })
         });
         const data = await response.json();
 
@@ -561,7 +589,7 @@
           const response = await fetch(ORYA_API + "/conversations/" + id, { headers: { "Authorization": "Bearer " + token } });
           if (response.status === 401) { clearSession(); return; }
           const data = await response.json();
-          conversation.messages = (data.messages || []).map(m => ({ role: m.role, text: m.content }));
+          conversation.messages = (data.messages || []).map(m => ({ role: m.role, text: displayText(m.content) }));
           conversation.loaded = true;
         } catch (e) {
           conversation.messages = [{ role: "assistant", text: "No se pudo cargar la conversación.", error: true }];
@@ -657,6 +685,82 @@
       }
       button.disabled = false;
     });
+
+    let attachment = null;
+
+    function displayText(str) {
+      return str.replace(/\[\[ADJUNTO:([^\]\n]{0,100})\]\][\s\S]*?\[\[\/ADJUNTO\]\]/g, "📎 $1");
+    }
+
+    function setAttachment(value) {
+      attachment = value;
+      $("#attachName").textContent = (value.kind === "image" ? "🖼️ " : "📎 ") + value.name;
+      $("#attachChip").hidden = false;
+    }
+
+    function clearAttachment() {
+      attachment = null;
+      $("#attachChip").hidden = true;
+      $("#fileInput").value = "";
+    }
+
+    function imageToDataUrl(source, width, height) {
+      const scale = Math.min(1, 1024 / Math.max(width, height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.8);
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      try {
+        if (file.type.startsWith("image/")) {
+          const bitmap = await createImageBitmap(file);
+          setAttachment({ kind: "image", name: file.name.slice(0, 60), dataUrl: imageToDataUrl(bitmap, bitmap.width, bitmap.height) });
+        } else {
+          if (file.size > 300000) { alert("El archivo es demasiado grande (máximo unos 300 KB)."); return; }
+          const content = await file.text();
+          if (!content.trim()) { alert("El archivo está vacío."); return; }
+          setAttachment({ kind: "text", name: file.name.slice(0, 60), text: content.slice(0, 12000) });
+          if (content.length > 12000) alert("El archivo es largo: solo se enviarán los primeros 12.000 caracteres.");
+        }
+      } catch (e) {
+        alert("No se pudo leer ese archivo. Prueba con una imagen JPG o PNG, o con un archivo de texto.");
+      }
+    }
+
+    $("#attachBtn").addEventListener("click", () => $("#fileInput").click());
+    $("#fileInput").addEventListener("change", event => handleFile(event.target.files[0]));
+    $("#attachRemove").addEventListener("click", clearAttachment);
+
+    let cameraStream = null;
+    function closeCamera() {
+      if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+      $("#camVideo").srcObject = null;
+      $("#cameraModal").hidden = true;
+    }
+
+    $("#cameraBtn").addEventListener("click", async () => {
+      $("#camMsg").textContent = "";
+      $("#cameraModal").hidden = false;
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        $("#camVideo").srcObject = cameraStream;
+      } catch (e) {
+        $("#camMsg").textContent = "No se pudo acceder a la cámara. Revisa el permiso del navegador o usa 📎 para elegir una foto.";
+      }
+    });
+
+    $("#camShot").addEventListener("click", () => {
+      const video = $("#camVideo");
+      if (!cameraStream || !video.videoWidth) return;
+      setAttachment({ kind: "image", name: "foto.jpg", dataUrl: imageToDataUrl(video, video.videoWidth, video.videoHeight) });
+      closeCamera();
+    });
+    $("#camClose").addEventListener("click", closeCamera);
 
     let webSearch = false;
     $("#webToggle").addEventListener("click", () => {
