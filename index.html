@@ -11,6 +11,9 @@
     :root {
       --bg: #090d18; --panel: #101625; --panel2: #161e30; --border: #273147;
       --text: #f5f7ff; --muted: #98a5bd; --orange: #ff963d; --blue: #5797ff;
+      --orange2: #f47d42; --sidebar: #0d1220; --input: #121a2a; --card: #111828;
+      --bubble: #1b2b45; --bubble-border: #2b4263; --border2: #34415a;
+      --topbar: #0b1020dd; --text2: #c4cde0; --overlay: #090d18f2;
     }
     * { box-sizing: border-box; }
     body {
@@ -22,7 +25,7 @@
     .app { min-height: 100vh; display: flex; }
 
     .sidebar {
-      width: 265px; flex-shrink: 0; padding: 22px 16px; background: #0d1220;
+      width: 265px; flex-shrink: 0; padding: 22px 16px; background: var(--sidebar);
       border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 24px;
     }
     .brand { display: flex; align-items: center; gap: 12px; padding: 4px 5px 12px; }
@@ -34,7 +37,7 @@
     .new-chat {
       display: flex; justify-content: center; align-items: center; gap: 9px; width: 100%;
       padding: 13px; color: white; font-weight: 650;
-      background: linear-gradient(110deg, #ff963d, #f47d42); border: 0; border-radius: 13px;
+      background: linear-gradient(110deg, var(--orange), var(--orange2)); border: 0; border-radius: 13px;
     }
     .new-chat:hover { filter: brightness(1.08); }
 
@@ -44,18 +47,18 @@
     }
     .history-list { display: flex; flex-direction: column; gap: 6px; }
     .history-item {
-      width: 100%; text-align: left; color: #c4cde0; background: transparent;
+      width: 100%; text-align: left; color: var(--text2); background: transparent;
       border: 1px solid transparent; border-radius: 10px; padding: 11px 12px;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .history-item:hover, .history-item.active { background: var(--panel2); border-color: var(--border); color: white; }
+    .history-item:hover, .history-item.active { background: var(--panel2); border-color: var(--border); color: var(--text); }
     .empty-history { padding: 8px 10px; color: #7e8aa0; font-size: 12px; }
 
     .sidebar-bottom { margin-top: auto; }
     .profile { display: flex; align-items: center; gap: 11px; padding: 13px 9px; border-top: 1px solid var(--border); }
     .avatar {
       display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0;
-      border-radius: 50%; color: white; background: linear-gradient(135deg, #ff963d, #5c8eff); font-weight: 800;
+      border-radius: 50%; color: white; background: linear-gradient(135deg, var(--orange), var(--blue)); font-weight: 800;
     }
     .profile-name { font-size: 13px; font-weight: 650; }
     .profile-type { font-size: 11px; color: var(--muted); margin-top: 4px; }
@@ -63,7 +66,7 @@
     .main { flex: 1; min-width: 0; min-height: 100vh; display: flex; flex-direction: column; }
     .topbar {
       height: 70px; flex-shrink: 0; padding: 0 28px; display: flex; align-items: center;
-      justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); background: #0b1020dd;
+      justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); background: var(--topbar);
     }
     .topbar-left { display: flex; align-items: center; gap: 11px; }
     .topbar-title { font-size: 14px; font-weight: 700; }
@@ -77,13 +80,13 @@
     .welcome[hidden] { display: none; }
     .welcome-mark {
       width: 76px; height: 76px; margin: 0 auto 24px; display: grid; place-items: center;
-      border: 1px solid #34415a; border-radius: 24px;
+      border: 1px solid var(--border2); border-radius: 24px;
       background: radial-gradient(circle at top left, #ff963d2c, #5797ff17);
     }
     .welcome-mark img { width: 58px; height: 58px; object-fit: contain; }
     .welcome h1 { margin: 0; font-size: clamp(30px, 5vw, 43px); letter-spacing: -1.6px; line-height: 1.15; }
     .welcome h1 span {
-      background: linear-gradient(90deg, var(--orange), #ffbd70, var(--blue));
+      background: linear-gradient(90deg, var(--orange), var(--orange2), var(--blue));
       color: transparent; background-clip: text; -webkit-background-clip: text;
     }
     .welcome p { max-width: 440px; margin: 16px auto 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
@@ -93,7 +96,7 @@
       max-width: 620px; margin: 29px auto 0; text-align: left;
     }
     .suggestion {
-      padding: 15px; color: var(--text); background: #111828; border: 1px solid var(--border);
+      padding: 15px; color: var(--text); background: var(--card); border: 1px solid var(--border);
       border-radius: 14px; text-align: left; transition: border-color .2s, transform .2s;
     }
     .suggestion:hover { border-color: #6587bd; transform: translateY(-2px); }
@@ -112,7 +115,7 @@
     .message-label { margin: 2px 0 8px; color: var(--muted); font-size: 11px; }
     .message-text { font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; white-space: pre-wrap; }
     .message.user .message-text {
-      padding: 12px 15px; background: #1b2b45; border: 1px solid #2b4263; border-radius: 16px 16px 4px 16px;
+      padding: 12px 15px; background: var(--bubble); border: 1px solid var(--bubble-border); border-radius: 16px 16px 4px 16px;
     }
     .message.pending .message-text { color: var(--muted); }
     .message.error .message-text { color: #ff8a7a; }
@@ -122,13 +125,13 @@
       background: linear-gradient(transparent, var(--bg) 18%);
     }
     .composer {
-      display: flex; align-items: flex-end; gap: 10px; padding: 10px; background: #121a2a;
-      border: 1px solid #34415a; border-radius: 18px; box-shadow: 0 12px 40px #0003;
+      display: flex; align-items: flex-end; gap: 10px; padding: 10px; background: var(--input);
+      border: 1px solid var(--border2); border-radius: 18px; box-shadow: 0 12px 40px #0003;
     }
     .composer:focus-within { border-color: #6288c4; }
     .composer textarea {
       flex: 1; min-width: 0; max-height: 180px; min-height: 44px; padding: 12px 9px; resize: none;
-      color: white; background: transparent; border: 0; outline: none; line-height: 1.5; font-size: 14px;
+      color: var(--text); background: transparent; border: 0; outline: none; line-height: 1.5; font-size: 14px;
     }
     .composer textarea::placeholder { color: #78859d; }
     .send-button {
@@ -150,7 +153,7 @@
       }
       .sidebar.open { transform: translateX(0); }
       .mobile-menu {
-        display: inline-grid; place-items: center; width: 38px; height: 38px; color: white;
+        display: inline-grid; place-items: center; width: 38px; height: 38px; color: var(--text);
         background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
       }
       .topbar { height: 62px; padding: 0 15px; }
@@ -166,18 +169,32 @@
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
     }
 
-    .auth { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: #090d18f2; }
+    .auth { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: var(--overlay); }
     .auth[hidden] { display: none; }
     .auth-card { width: min(380px, 100%); padding: 26px; background: var(--panel); border: 1px solid var(--border); border-radius: 18px; display: flex; flex-direction: column; gap: 8px; }
     .auth-card h2 { margin: 0; font-size: 22px; letter-spacing: -.5px; }
     .auth-sub { margin: 0 0 10px; color: var(--muted); font-size: 13px; line-height: 1.6; }
     .auth-card label { margin-top: 6px; color: var(--muted); font-size: 12px; }
-    .auth-card input { padding: 12px; color: white; background: #121a2a; border: 1px solid #34415a; border-radius: 11px; outline: none; }
+    .auth-card input { padding: 12px; color: var(--text); background: var(--input); border: 1px solid var(--border2); border-radius: 11px; outline: none; }
     .auth-card input:focus { border-color: #6288c4; }
     .auth-error { min-height: 18px; margin-top: 4px; color: #ff8a7a; font-size: 12px; line-height: 1.5; }
     .auth-switch { padding: 8px; background: transparent; border: 0; color: var(--blue); font-size: 13px; }
     .auth-switch[hidden] { display: none; }
-    .profile .auth-switch { margin-left: auto; }
+    .profile .auth-switch { margin-left: 0; }
+
+    :root[data-theme="light"] {
+      --bg: #f4f6fb; --panel: #ffffff; --panel2: #eceff6; --border: #d8deeb; --text: #141a2b; --muted: #56637d;
+      --sidebar: #ffffff; --input: #ffffff; --card: #ffffff; --bubble: #e4edfc; --bubble-border: #c6d7f4;
+      --border2: #c3cbdd; --topbar: #f4f6fbdd; --text2: #38445f; --overlay: #f4f6fbf2;
+    }
+    :root[data-accent="blue"] { --orange: #5797ff; --orange2: #3f7fe6; --blue: #ff963d; }
+    :root[data-accent="green"] { --orange: #34c98b; --orange2: #27a874; }
+    :root[data-accent="purple"] { --orange: #a37cff; --orange2: #8a63f0; }
+    .auth-card select, .auth-card textarea { padding: 12px; color: var(--text); background: var(--input); border: 1px solid var(--border2); border-radius: 11px; outline: none; font: inherit; }
+    .auth-card textarea { resize: vertical; }
+    .auth-card select:focus, .auth-card textarea:focus { border-color: #6288c4; }
+    .settings-card { max-height: 92vh; overflow-y: auto; }
+    #settingsBtn { margin-left: auto; font-size: 18px; }
   </style>
 </head>
 
@@ -193,6 +210,44 @@
       <div class="auth-error" id="authError" role="alert"></div>
       <button class="new-chat" id="authSubmit" type="submit">Entrar</button>
       <button class="auth-switch" id="authSwitch" type="button">¿No tienes cuenta? Crear una</button>
+    </form>
+  </div>
+
+  <div class="auth" id="settingsModal" hidden>
+    <form class="auth-card settings-card" id="settingsForm">
+      <h2>Configuración</h2>
+      <label for="setName">Nombre del asistente</label>
+      <input id="setName" maxlength="24">
+      <label for="setPersonality">Personalidad y tono</label>
+      <select id="setPersonality">
+        <option value="balanced">Equilibrada</option>
+        <option value="friendly">Cercana</option>
+        <option value="formal">Formal</option>
+        <option value="concise">Breve y directa</option>
+      </select>
+      <label for="setCustom">Instrucciones personalizadas (opcional)</label>
+      <textarea id="setCustom" maxlength="300" rows="3" placeholder="Ej.: explícame con ejemplos de la vida diaria"></textarea>
+      <label for="setLang">Idioma de las respuestas</label>
+      <select id="setLang">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+        <option value="auto">El mismo que yo escriba</option>
+      </select>
+      <label for="setTheme">Tema</label>
+      <select id="setTheme">
+        <option value="dark">Oscuro</option>
+        <option value="light">Claro</option>
+      </select>
+      <label for="setAccent">Color de la interfaz</label>
+      <select id="setAccent">
+        <option value="orange">Naranja</option>
+        <option value="blue">Azul</option>
+        <option value="green">Verde</option>
+        <option value="purple">Morado</option>
+      </select>
+      <div class="auth-error" id="settingsMsg" role="status"></div>
+      <button class="new-chat" id="settingsSave" type="submit">Guardar</button>
+      <button class="auth-switch" id="settingsClose" type="button">Cerrar</button>
     </form>
   </div>
 
@@ -220,6 +275,7 @@
             <div class="profile-name" id="profileName">Mi espacio</div>
             <div class="profile-type">Versión inicial</div>
           </div>
+          <button class="auth-switch" id="settingsBtn" type="button" aria-label="Configuración" hidden>⚙</button>
           <button class="auth-switch" id="logoutBtn" type="button" hidden>Salir</button>
         </div>
       </div>
@@ -364,7 +420,7 @@
 
         const label = document.createElement("div");
         label.className = "message-label";
-        label.textContent = message.role === "user" ? "Tú" : "Orya IA";
+        label.textContent = message.role === "user" ? "Tú" : settings.assistantName;
 
         const text = document.createElement("div");
         text.className = "message-text";
@@ -476,6 +532,7 @@
     } catch (e) {}
 
     async function loadConversations() {
+      loadSettings();
       try {
         const response = await fetch(ORYA_API + "/conversations", { headers: { "Authorization": "Bearer " + token } });
         if (response.status === 401) { clearSession(); return; }
@@ -509,6 +566,93 @@
       renderMessages();
     }
 
+    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", theme: "dark", accent: "orange" };
+    let settings = { ...DEFAULT_SETTINGS };
+    try { settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("orya_settings") || "{}") }; } catch (e) {}
+
+    function applySettings(value) {
+      document.documentElement.dataset.theme = value.theme === "light" ? "light" : "dark";
+      document.documentElement.dataset.accent = value.accent || "orange";
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = value.theme === "light" ? "#f4f6fb" : "#0b1020";
+    }
+    applySettings(settings);
+
+    function setSettings(value) {
+      settings = { ...DEFAULT_SETTINGS, ...value };
+      try { localStorage.setItem("orya_settings", JSON.stringify(settings)); } catch (e) {}
+      applySettings(settings);
+      renderMessages();
+    }
+
+    async function loadSettings() {
+      try {
+        const response = await fetch(ORYA_API + "/settings", { headers: { "Authorization": "Bearer " + token } });
+        if (!response.ok) return;
+        const data = await response.json();
+        setSettings(data.settings);
+      } catch (e) {}
+    }
+
+    function readSettingsForm() {
+      return {
+        assistantName: $("#setName").value.trim() || "Orya",
+        personality: $("#setPersonality").value,
+        customInstructions: $("#setCustom").value.trim(),
+        replyLanguage: $("#setLang").value,
+        theme: $("#setTheme").value,
+        accent: $("#setAccent").value
+      };
+    }
+
+    function closeSettings() {
+      applySettings(settings);
+      $("#settingsModal").hidden = true;
+    }
+
+    $("#settingsBtn").addEventListener("click", () => {
+      $("#setName").value = settings.assistantName;
+      $("#setPersonality").value = settings.personality;
+      $("#setCustom").value = settings.customInstructions;
+      $("#setLang").value = settings.replyLanguage;
+      $("#setTheme").value = settings.theme;
+      $("#setAccent").value = settings.accent;
+      $("#settingsMsg").textContent = "";
+      $("#settingsModal").hidden = false;
+      sidebar.classList.remove("open");
+    });
+
+    ["#setTheme", "#setAccent"].forEach(id => {
+      $(id).addEventListener("change", () => applySettings(readSettingsForm()));
+    });
+
+    $("#settingsClose").addEventListener("click", closeSettings);
+
+    $("#settingsForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = $("#settingsSave");
+      button.disabled = true;
+      $("#settingsMsg").textContent = "";
+      try {
+        const response = await fetch(ORYA_API + "/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+          body: JSON.stringify({ settings: readSettingsForm() })
+        });
+        if (response.status === 401) { closeSettings(); clearSession(); button.disabled = false; return; }
+        const data = await response.json();
+        if (response.ok && data.settings) {
+          setSettings(data.settings);
+          $("#settingsModal").hidden = true;
+        } else {
+          $("#settingsMsg").textContent = data.error || "No se pudo guardar la configuración.";
+        }
+      } catch (e) {
+        $("#settingsMsg").textContent = "No se pudo conectar con el servidor.";
+      }
+      button.disabled = false;
+    });
+
     function setAuthMode(mode) {
       authMode = mode;
       const login = mode === "login";
@@ -527,6 +671,7 @@
     function applyUser() {
       $("#profileName").textContent = currentUser || "Mi espacio";
       $("#logoutBtn").hidden = !token;
+      $("#settingsBtn").hidden = !token;
       $(".avatar").textContent = currentUser ? currentUser[0].toUpperCase() : "O";
     }
 
@@ -551,6 +696,9 @@
       } catch (e) {}
       conversations = [];
       activeId = null;
+      settings = { ...DEFAULT_SETTINGS };
+      try { localStorage.removeItem("orya_settings"); } catch (e) {}
+      applySettings(settings);
       applyUser();
       renderHistory();
       renderMessages();
