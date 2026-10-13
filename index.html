@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; media-src blob:; connect-src https://orya-backend.pabloemilioestudios.workers.dev; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Orya IA, tu espacio de inteligencia artificial.">
@@ -205,6 +207,17 @@
     .attach-chip button { background: transparent; border: 0; color: var(--muted); font-size: 14px; }
     #camVideo { width: 100%; border-radius: 12px; background: #000; max-height: 50vh; }
     @media (max-width: 700px) { .web-toggle, .tool-btn, .send-button { width: 38px; height: 38px; } }
+
+    .history-row { display: flex; align-items: center; gap: 2px; }
+    .history-row .history-item { flex: 1; min-width: 0; }
+    .history-act { padding: 6px; background: transparent; border: 0; border-radius: 8px; color: var(--muted); font-size: 13px; opacity: 0; }
+    .history-row:hover .history-act, .history-row:focus-within .history-act, .history-row.active .history-act { opacity: 1; }
+    @media (hover: none) { .history-act { opacity: 1; } }
+    .history-act:hover { background: var(--panel2); color: var(--text); }
+    .danger-zone { margin-top: 8px; }
+    .danger-zone summary { color: #ff8a7a; font-size: 13px; cursor: pointer; }
+    .danger-zone input { width: 100%; margin: 8px 0; }
+    .danger-btn { color: #ff8a7a; }
   </style>
 </head>
 
@@ -255,6 +268,12 @@
         <option value="green">Verde</option>
         <option value="purple">Morado</option>
       </select>
+      <details class="danger-zone">
+        <summary>Zona de peligro</summary>
+        <p class="auth-sub">Eliminar tu cuenta borra de forma permanente tus conversaciones y tu configuración. Para confirmarlo, escribe tu contraseña.</p>
+        <input id="delPass" type="password" autocomplete="current-password" placeholder="Tu contraseña" maxlength="200">
+        <button class="auth-switch danger-btn" id="delAccount" type="button">Eliminar mi cuenta definitivamente</button>
+      </details>
       <div class="auth-error" id="settingsMsg" role="status"></div>
       <button class="new-chat" id="settingsSave" type="submit">Guardar</button>
       <button class="auth-switch" id="settingsClose" type="button">Cerrar</button>
@@ -393,7 +412,7 @@
       const bytes = new Uint8Array(16);
       crypto.getRandomValues(bytes);
       activeId = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
-      conversations.unshift({ id: activeId, title: "Nueva conversación", messages: [], loaded: true });
+      conversations.unshift({ id: activeId, title: "Nueva conversación", messages: [], loaded: true, saved: false });
       renderHistory();
       renderMessages();
       sidebar.classList.remove("open");
@@ -414,13 +433,34 @@
         return;
       }
       conversations.forEach(conversation => {
+        const row = document.createElement("div");
+        row.className = "history-row" + (conversation.id === activeId ? " active" : "");
+
         const button = document.createElement("button");
         button.type = "button";
         button.className = "history-item" + (conversation.id === activeId ? " active" : "");
         button.textContent = conversation.title;
         button.title = conversation.title;
         button.addEventListener("click", () => openConversation(conversation.id));
-        historyList.appendChild(button);
+
+        const rename = document.createElement("button");
+        rename.type = "button";
+        rename.className = "history-act";
+        rename.textContent = "✎";
+        rename.title = "Cambiar nombre";
+        rename.setAttribute("aria-label", "Cambiar nombre del chat");
+        rename.addEventListener("click", () => renameConversation(conversation.id));
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "history-act";
+        remove.textContent = "🗑";
+        remove.title = "Eliminar chat";
+        remove.setAttribute("aria-label", "Eliminar chat");
+        remove.addEventListener("click", () => deleteConversation(conversation.id));
+
+        row.append(button, rename, remove);
+        historyList.appendChild(row);
       });
     }
 
@@ -512,6 +552,7 @@
 
         if (response.ok && data.reply) {
           reply.text = data.reply;
+          conversation.saved = true;
         } else {
           reply.text = "No se pudo obtener respuesta: " + (data.error || "respuesta inesperada");
           reply.error = true;
@@ -570,7 +611,7 @@
         const response = await fetch(ORYA_API + "/conversations", { headers: { "Authorization": "Bearer " + token } });
         if (response.status === 401) { clearSession(); return; }
         const data = await response.json();
-        conversations = (data.conversations || []).map(c => ({ id: c.id, title: c.title, messages: [], loaded: false }));
+        conversations = (data.conversations || []).map(c => ({ id: c.id, title: c.title, messages: [], loaded: false, saved: true }));
         activeId = null;
         renderHistory();
         renderMessages();
@@ -761,6 +802,79 @@
       closeCamera();
     });
     $("#camClose").addEventListener("click", closeCamera);
+
+    function authHeaders() {
+      return { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+    }
+
+    async function renameConversation(id) {
+      const conversation = conversations.find(c => c.id === id);
+      if (!conversation) return;
+      if (!conversation.saved) { alert("Envía primero un mensaje para poder cambiar el nombre."); return; }
+      const input = prompt("Nuevo nombre del chat (máximo 60 caracteres):", conversation.title);
+      if (input === null) return;
+      const title = input.trim().slice(0, 60);
+      if (!title) return;
+      try {
+        const response = await fetch(ORYA_API + "/conversations/" + id + "/rename", {
+          method: "POST", headers: authHeaders(), body: JSON.stringify({ title })
+        });
+        if (response.status === 401) { clearSession(); return; }
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (response.ok) {
+          conversation.title = data.title || title;
+          renderHistory();
+        } else {
+          alert(data.error || "No se pudo cambiar el nombre.");
+        }
+      } catch (e) {
+        alert("No se pudo conectar con el servidor.");
+      }
+    }
+
+    async function deleteConversation(id) {
+      const conversation = conversations.find(c => c.id === id);
+      if (!conversation) return;
+      if (sending) { alert("Espera a que termine la respuesta antes de eliminar un chat."); return; }
+      if (!confirm("¿Eliminar este chat? Esta acción no se puede deshacer.")) return;
+      if (conversation.saved) {
+        try {
+          const response = await fetch(ORYA_API + "/conversations/" + id, { method: "DELETE", headers: authHeaders() });
+          if (response.status === 401) { clearSession(); return; }
+          if (!response.ok) { alert("No se pudo eliminar el chat."); return; }
+        } catch (e) {
+          alert("No se pudo conectar con el servidor.");
+          return;
+        }
+      }
+      conversations = conversations.filter(c => c.id !== id);
+      if (activeId === id) activeId = null;
+      renderHistory();
+      renderMessages();
+    }
+
+    $("#delAccount").addEventListener("click", async () => {
+      const password = $("#delPass").value;
+      if (!password) { $("#settingsMsg").textContent = "Escribe tu contraseña para confirmar."; return; }
+      if (!confirm("Esto eliminará tu cuenta y todas tus conversaciones de forma permanente. ¿Continuar?")) return;
+      try {
+        const response = await fetch(ORYA_API + "/account/delete", {
+          method: "POST", headers: authHeaders(), body: JSON.stringify({ password })
+        });
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (response.ok) {
+          $("#delPass").value = "";
+          $("#settingsModal").hidden = true;
+          clearSession();
+        } else {
+          $("#settingsMsg").textContent = data.error || "No se pudo eliminar la cuenta.";
+        }
+      } catch (e) {
+        $("#settingsMsg").textContent = "No se pudo conectar con el servidor.";
+      }
+    });
 
     let webSearch = false;
     $("#webToggle").addEventListener("click", () => {
