@@ -2,8 +2,12 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; media-src blob:; connect-src https://orya-backend.pabloemilioestudios.workers.dev; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; media-src blob:; connect-src https://orya-backend.pabloemilioestudios.workers.dev; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="referrer" content="no-referrer">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="logo-icon.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Orya IA, tu espacio de inteligencia artificial.">
@@ -218,6 +222,12 @@
     .danger-zone summary { color: #ff8a7a; font-size: 13px; cursor: pointer; }
     .danger-zone input { width: 100%; margin: 8px 0; }
     .danger-btn { color: #ff8a7a; }
+
+    .sec-zone { margin-top: 8px; }
+    .sec-zone summary { color: var(--text2); font-size: 13px; cursor: pointer; }
+    .sec-zone input { width: 100%; margin: 6px 0; }
+    .recovery-code { padding: 14px; background: var(--input); border: 1px solid var(--border2); border-radius: 11px; text-align: center; font-family: ui-monospace, Consolas, monospace; font-size: 18px; letter-spacing: 1px; overflow-wrap: anywhere; user-select: all; }
+    .recovery-check { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--text2); font-size: 13px; }
   </style>
 </head>
 
@@ -228,11 +238,14 @@
       <p class="auth-sub">Entra con tu nombre de usuario. No necesitas correo electrónico.</p>
       <label for="authUser">Nombre de usuario</label>
       <input id="authUser" name="username" autocomplete="username" maxlength="20" required>
-      <label for="authPass">Contraseña (mínimo 8 caracteres)</label>
+      <label for="authCode" id="authCodeLabel" hidden>Código de recuperación</label>
+      <input id="authCode" autocomplete="off" maxlength="40" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" hidden>
+      <label for="authPass" id="authPassLabel">Contraseña (mínimo 8 caracteres)</label>
       <input id="authPass" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="200" required>
       <div class="auth-error" id="authError" role="alert"></div>
       <button class="new-chat" id="authSubmit" type="submit">Entrar</button>
       <button class="auth-switch" id="authSwitch" type="button">¿No tienes cuenta? Crear una</button>
+      <button class="auth-switch" id="forgotBtn" type="button">¿Olvidaste tu contraseña?</button>
     </form>
   </div>
 
@@ -268,6 +281,14 @@
         <option value="green">Verde</option>
         <option value="purple">Morado</option>
       </select>
+      <details class="sec-zone">
+        <summary>Seguridad: contraseña y código de recuperación</summary>
+        <p class="auth-sub">Escribe tu contraseña actual para cualquiera de estas dos acciones.</p>
+        <input id="pwCurrent" type="password" autocomplete="current-password" placeholder="Contraseña actual" maxlength="200">
+        <input id="pwNew" type="password" autocomplete="new-password" placeholder="Nueva contraseña (mínimo 8)" maxlength="200">
+        <button class="auth-switch" id="pwChange" type="button">Cambiar contraseña</button>
+        <button class="auth-switch" id="recoveryNew" type="button">Generar nuevo código de recuperación</button>
+      </details>
       <details class="danger-zone">
         <summary>Zona de peligro</summary>
         <p class="auth-sub">Eliminar tu cuenta borra de forma permanente tus conversaciones y tu configuración. Para confirmarlo, escribe tu contraseña.</p>
@@ -287,6 +308,17 @@
       <div class="auth-error" id="camMsg" role="alert"></div>
       <button class="new-chat" id="camShot" type="button">Tomar foto</button>
       <button class="auth-switch" id="camClose" type="button">Cerrar</button>
+    </div>
+  </div>
+
+  <div class="auth" id="recoveryModal" hidden>
+    <div class="auth-card" role="dialog" aria-labelledby="recoveryTitle">
+      <h2 id="recoveryTitle">Guarda tu código de recuperación</h2>
+      <p class="auth-sub">Sin correo electrónico, este código es la única forma de recuperar tu cuenta si olvidas la contraseña. Se muestra <strong>una sola vez</strong>. Guárdalo en un lugar seguro y no lo compartas.</p>
+      <div class="recovery-code" id="recoveryCode"></div>
+      <button class="auth-switch" id="recoveryCopy" type="button">Copiar código</button>
+      <label class="recovery-check"><input type="checkbox" id="recoverySaved"> Ya guardé mi código</label>
+      <button class="new-chat" id="recoveryContinue" type="button" disabled>Continuar</button>
     </div>
   </div>
 
@@ -901,12 +933,90 @@
     function setAuthMode(mode) {
       authMode = mode;
       const login = mode === "login";
-      $("#authTitle").textContent = login ? "Inicia sesión" : "Crea tu cuenta";
-      $("#authSubmit").textContent = login ? "Entrar" : "Crear cuenta";
-      $("#authSwitch").textContent = login ? "¿No tienes cuenta? Crear una" : "¿Ya tienes cuenta? Iniciar sesión";
+      const reset = mode === "reset";
+      $("#authTitle").textContent = login ? "Inicia sesión" : reset ? "Recupera tu cuenta" : "Crea tu cuenta";
+      $("#authSubmit").textContent = login ? "Entrar" : reset ? "Cambiar contraseña" : "Crear cuenta";
+      $("#authSwitch").textContent = login ? "¿No tienes cuenta? Crear una" : "Volver a iniciar sesión";
       $("#authPass").autocomplete = login ? "current-password" : "new-password";
+      $("#authPassLabel").textContent = reset ? "Nueva contraseña (mínimo 8 caracteres)" : "Contraseña (mínimo 8 caracteres)";
+      $("#authCode").hidden = !reset;
+      $("#authCodeLabel").hidden = !reset;
+      $("#authCode").required = reset;
+      $("#forgotBtn").hidden = !login;
       $("#authError").textContent = "";
     }
+
+    $("#forgotBtn").addEventListener("click", () => setAuthMode("reset"));
+
+    function showRecovery(code) {
+      $("#recoveryCode").textContent = code;
+      $("#recoverySaved").checked = false;
+      $("#recoveryContinue").disabled = true;
+      $("#recoveryCopy").textContent = "Copiar código";
+      $("#recoveryModal").hidden = false;
+    }
+
+    $("#recoverySaved").addEventListener("change", event => {
+      $("#recoveryContinue").disabled = !event.target.checked;
+    });
+    $("#recoveryContinue").addEventListener("click", () => {
+      $("#recoveryCode").textContent = "";
+      $("#recoveryModal").hidden = true;
+    });
+    $("#recoveryCopy").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText($("#recoveryCode").textContent);
+        $("#recoveryCopy").textContent = "¡Copiado!";
+      } catch (e) {
+        $("#recoveryCopy").textContent = "No se pudo copiar: anótalo a mano";
+      }
+    });
+
+    $("#pwChange").addEventListener("click", async () => {
+      const currentPassword = $("#pwCurrent").value;
+      const newPassword = $("#pwNew").value;
+      const msg = $("#settingsMsg");
+      if (!currentPassword) { msg.textContent = "Escribe tu contraseña actual."; return; }
+      if (newPassword.length < 8) { msg.textContent = "La nueva contraseña debe tener al menos 8 caracteres."; return; }
+      try {
+        const response = await fetch(ORYA_API + "/password/change", {
+          method: "POST", headers: authHeaders(), body: JSON.stringify({ currentPassword, newPassword })
+        });
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (response.ok) {
+          $("#pwCurrent").value = "";
+          $("#pwNew").value = "";
+          msg.textContent = "Contraseña cambiada. Se cerró la sesión en tus otros dispositivos.";
+        } else {
+          msg.textContent = data.error || "No se pudo cambiar la contraseña (código " + response.status + ").";
+        }
+      } catch (e) {
+        msg.textContent = "No se pudo conectar con el servidor.";
+      }
+    });
+
+    $("#recoveryNew").addEventListener("click", async () => {
+      const password = $("#pwCurrent").value;
+      const msg = $("#settingsMsg");
+      if (!password) { msg.textContent = "Escribe tu contraseña actual."; return; }
+      try {
+        const response = await fetch(ORYA_API + "/recovery/new", {
+          method: "POST", headers: authHeaders(), body: JSON.stringify({ password })
+        });
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (response.ok && data.recoveryCode) {
+          $("#pwCurrent").value = "";
+          msg.textContent = "";
+          showRecovery(data.recoveryCode);
+        } else {
+          msg.textContent = data.error || "No se pudo generar el código (código " + response.status + ").";
+        }
+      } catch (e) {
+        msg.textContent = "No se pudo conectar con el servidor.";
+      }
+    });
 
     function showAuth() {
       $("#auth").hidden = false;
@@ -961,16 +1071,23 @@
       button.disabled = true;
       $("#authError").textContent = "";
       try {
-        const response = await fetch(ORYA_API + (authMode === "login" ? "/login" : "/register"), {
+        const paths = { login: "/login", register: "/register", reset: "/password/reset" };
+        const username = $("#authUser").value.trim();
+        const payload = authMode === "reset"
+          ? { username, recoveryCode: $("#authCode").value.trim(), newPassword: $("#authPass").value }
+          : { username, password: $("#authPass").value };
+        const response = await fetch(ORYA_API + paths[authMode], {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: $("#authUser").value.trim(), password: $("#authPass").value })
+          body: JSON.stringify(payload)
         });
         let data = {};
         try { data = await response.json(); } catch (e) {}
         if (response.ok && data.token) {
           $("#authPass").value = "";
+          $("#authCode").value = "";
           saveSession(data.token, data.username);
+          if (data.recoveryCode) showRecovery(data.recoveryCode);
         } else {
           $("#authError").textContent = data.error || "No se pudo completar la acción (código " + response.status + ").";
         }
@@ -996,6 +1113,12 @@
 
     renderHistory();
     initAuth();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>
