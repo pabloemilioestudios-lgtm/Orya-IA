@@ -31,7 +31,7 @@
       border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 24px;
     }
     .brand { display: flex; align-items: center; gap: 12px; padding: 4px 5px 12px; }
-    .brand-logo { width: 47px; height: 47px; border-radius: 12px; object-fit: contain; flex-shrink: 0; }
+    .brand-logo { width: 60px; height: 60px; object-fit: contain; flex-shrink: 0; }
     .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -.8px; }
     .brand-name span { color: var(--orange); }
     .brand-subtitle { margin-top: 4px; color: var(--muted); font-size: 11px; }
@@ -81,11 +81,11 @@
     .welcome { margin: auto 0; padding: 38px 0 45px; text-align: center; }
     .welcome[hidden] { display: none; }
     .welcome-mark {
-      width: 76px; height: 76px; margin: 0 auto 24px; display: grid; place-items: center;
-      border: 1px solid var(--border2); border-radius: 24px;
+      width: 176px; height: 176px; margin: 0 auto 20px; display: grid; place-items: center;
+      border: 1px solid var(--border2); border-radius: 36px;
       background: radial-gradient(circle at top left, #ff963d2c, #5797ff17);
     }
-    .welcome-mark img { width: 58px; height: 58px; object-fit: contain; }
+    .welcome-mark img { width: 150px; height: 150px; object-fit: contain; }
     .welcome h1 { margin: 0; font-size: clamp(30px, 5vw, 43px); letter-spacing: -1.6px; line-height: 1.15; }
     .welcome h1 span {
       background: linear-gradient(90deg, var(--orange), var(--orange2), var(--blue));
@@ -293,7 +293,7 @@
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <img class="brand-logo logo-img" src="" alt="Logo de Orya IA">
+        <img class="brand-logo logo-img" data-logo="icon" src="" alt="Logo de Orya IA">
         <div>
           <div class="brand-name">Orya <span>IA</span></div>
           <div class="brand-subtitle">Asistente inteligente</div>
@@ -377,22 +377,18 @@
   <script>
     const ORYA_API = "https://orya-backend.pabloemilioestudios.workers.dev";
 
-    const LOGO_CANDIDATES = [
-      "./logo.png?v=2",
-      "./Logo%20Torre%20con%20R%C3%ADo%20(1).png",
-      "./Logo%20Torre%20con%20Rio%20(1).png",
-      "./Logo%20Torre%20con%20R%C3%ADo.png",
-      "./Logo%20Torre%20con%20Rio.png"
-    ];
+    const LOGO_FULL = ["./logo.png?v=3"];
+    const LOGO_ICON = ["./logo-icon.png?v=3", "./logo.png?v=3"];
 
     function loadLogo(img) {
+      const list = img.dataset.logo === "icon" ? LOGO_ICON : LOGO_FULL;
       let i = 0;
       img.onerror = () => {
         i += 1;
-        if (i < LOGO_CANDIDATES.length) img.src = LOGO_CANDIDATES[i];
+        if (i < list.length) img.src = list[i];
         else { img.onerror = null; img.removeAttribute("src"); }
       };
-      img.src = LOGO_CANDIDATES[0];
+      img.src = list[0];
     }
     document.querySelectorAll(".logo-img").forEach(loadLogo);
 
