@@ -228,6 +228,10 @@
     .sec-zone input { width: 100%; margin: 6px 0; }
     .recovery-code { padding: 14px; background: var(--input); border: 1px solid var(--border2); border-radius: 11px; text-align: center; font-family: ui-monospace, Consolas, monospace; font-size: 18px; letter-spacing: 1px; overflow-wrap: anywhere; user-select: all; }
     .recovery-check { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--text2); font-size: 13px; }
+    .suggestions-frame { width: 100%; height: 64px; margin-top: 8px; border: 0; border-radius: 12px; background: transparent; }
+    .report-btn { margin-top: 6px; padding: 2px 6px; background: transparent; border: 0; color: var(--muted); font-size: 11px; }
+    .report-btn:hover { color: var(--text); }
+    .auth-sub a { color: var(--blue); }
   </style>
 </head>
 
@@ -246,6 +250,7 @@
       <button class="new-chat" id="authSubmit" type="submit">Entrar</button>
       <button class="auth-switch" id="authSwitch" type="button">¿No tienes cuenta? Crear una</button>
       <button class="auth-switch" id="forgotBtn" type="button">¿Olvidaste tu contraseña?</button>
+      <p class="auth-sub"><a href="privacy.html" target="_blank" rel="noopener">Política de privacidad</a></p>
     </form>
   </div>
 
@@ -260,7 +265,9 @@
         <option value="friendly">Cercana</option>
         <option value="formal">Formal</option>
         <option value="concise">Breve y directa</option>
+        <option value="support">Apoyo emocional</option>
       </select>
+      <p class="auth-sub" id="supportNote" hidden>En este modo Orya ofrece escucha y herramientas de bienestar, pero es una IA: no es psicólogo ni sustituye a un profesional de salud mental. Si estás en peligro o piensas en hacerte daño, contacta ya con los servicios de emergencia de tu país.</p>
       <label for="setCustom">Instrucciones personalizadas (opcional)</label>
       <textarea id="setCustom" maxlength="300" rows="3" placeholder="Ej.: explícame con ejemplos de la vida diaria"></textarea>
       <label for="setUiLang">Idioma de la interfaz</label>
@@ -275,6 +282,15 @@
         <option value="en">English</option>
         <option value="auto">El mismo que yo escriba</option>
       </select>
+      <label for="setSearch">Motor de búsqueda</label>
+      <select id="setSearch">
+        <option value="wikipedia">Wikipedia (privado)</option>
+        <option value="google">Google (Gemini)</option>
+      </select>
+      <p class="auth-sub">Con Google, tu pregunta y los últimos mensajes se envían a Google (Gemini) para buscar información actual. En el nivel gratuito, Google puede usarlos para mejorar sus productos. Los adjuntos nunca se envían a Google. Si Google no está disponible, Orya usa Wikipedia.</p>
+      <div hidden>
+      <label class="recovery-check"><input type="checkbox" id="setAuto"> Buscar automáticamente en Wikipedia cuando la pregunta lo necesite</label>
+      </div>
       <label for="setTheme">Tema</label>
       <select id="setTheme">
         <option value="dark">Oscuro</option>
@@ -287,6 +303,7 @@
         <option value="green">Verde</option>
         <option value="purple">Morado</option>
       </select>
+      <p class="auth-sub"><a href="privacy.html" target="_blank" rel="noopener">Política de privacidad</a> · <a href="delete-account.html" target="_blank" rel="noopener">Eliminar cuenta desde la web</a></p>
       <details class="sec-zone">
         <summary>Seguridad: contraseña y código de recuperación</summary>
         <p class="auth-sub">Escribe tu contraseña actual para cualquiera de estas dos acciones.</p>
@@ -328,6 +345,24 @@
     </div>
   </div>
 
+  <div class="auth" id="reportModal" hidden>
+    <form class="auth-card" id="reportForm">
+      <h2>Reportar esta respuesta</h2>
+      <label for="reportCategory">Motivo</label>
+      <select id="reportCategory">
+        <option value="inaccurate">Información incorrecta</option>
+        <option value="offensive">Contenido ofensivo</option>
+        <option value="harmful">Contenido dañino o peligroso</option>
+        <option value="other">Otro motivo</option>
+      </select>
+      <label for="reportComment">Comentario (opcional)</label>
+      <textarea id="reportComment" maxlength="500" rows="3" placeholder="Describe el problema…"></textarea>
+      <div class="auth-error" id="reportMsg" role="status"></div>
+      <button class="new-chat" id="reportSend" type="submit">Enviar reporte</button>
+      <button class="auth-switch" id="reportClose" type="button">Cancelar</button>
+    </form>
+  </div>
+
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
@@ -364,7 +399,6 @@
           <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Abrir menú">☰</button>
           <div class="topbar-title">Orya IA <small>/ Chat</small></div>
         </div>
-        <div class="topbar-status"><span class="status-dot"></span><span>IA conectada (prueba)</span></div>
       </header>
 
       <section class="chat">
@@ -403,7 +437,7 @@
             <textarea id="prompt" rows="1" aria-label="Escribe tu mensaje" placeholder="Escribe tu mensaje a Orya IA..."></textarea>
             <button class="tool-btn" id="attachBtn" type="button" title="Adjuntar imagen o archivo de texto" aria-label="Adjuntar archivo">📎</button>
             <button class="tool-btn" id="cameraBtn" type="button" title="Tomar una foto" aria-label="Tomar una foto">📷</button>
-            <button class="web-toggle" id="webToggle" type="button" aria-pressed="false" title="Buscar en Wikipedia antes de responder" aria-label="Buscar en Wikipedia antes de responder">🌐</button>
+            <button class="web-toggle" id="webToggle" type="button" aria-pressed="false" title="Buscar en la web antes de responder" aria-label="Buscar en la web antes de responder">🌐</button>
             <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensaje">↑</button>
           </form>
           <p class="disclaimer">Orya IA puede equivocarse. Verifica la información importante. Tus conversaciones se guardan en tu cuenta.</p>
@@ -492,13 +526,40 @@
   "Ayúdame a organizar un plan para alcanzar un objetivo.": "Help me organize a plan to reach a goal.",
   "Dame ideas creativas para una página web moderna.": "Give me creative ideas for a modern website.",
   "Tú": "You",
+  "Motor de búsqueda": "Search engine",
+  "Wikipedia (privado)": "Wikipedia (private)",
+  "Con Google, tu pregunta y los últimos mensajes se envían a Google (Gemini) para buscar información actual. En el nivel gratuito, Google puede usarlos para mejorar sus productos. Los adjuntos nunca se envían a Google. Si Google no está disponible, Orya usa Wikipedia.": "With Google, your question and the latest messages are sent to Google (Gemini) to look up current information. On the free tier, Google may use them to improve its products. Attachments are never sent to Google. If Google is unavailable, Orya uses Wikipedia.",
+  "Apoyo emocional": "Emotional support",
+  "En este modo Orya ofrece escucha y herramientas de bienestar, pero es una IA: no es psicólogo ni sustituye a un profesional de salud mental. Si estás en peligro o piensas en hacerte daño, contacta ya con los servicios de emergencia de tu país.": "In this mode Orya offers listening and wellbeing tools, but it is an AI: it is not a psychologist and does not replace a mental health professional. If you are in danger or thinking about harming yourself, contact your country's emergency services right away.",
+  "Buscar automáticamente en Wikipedia cuando la pregunta lo necesite": "Search Wikipedia automatically when a question needs it",
+  "Orya alcanzó su límite diario de uso gratuito de IA. Se reinicia a las 00:00 UTC; inténtalo más tarde.": "Orya has reached its daily free AI usage limit. It resets at 00:00 UTC; please try again later.",
+  "Cancelar": "Cancel",
+  "Reportar": "Report",
+  "Reportar esta respuesta": "Report this response",
+  "Motivo": "Reason",
+  "Información incorrecta": "Incorrect information",
+  "Contenido ofensivo": "Offensive content",
+  "Contenido dañino o peligroso": "Harmful or dangerous content",
+  "Otro motivo": "Other reason",
+  "Comentario (opcional)": "Comment (optional)",
+  "Describe el problema…": "Describe the problem…",
+  "Enviar reporte": "Send report",
+  "Gracias. Revisaremos tu reporte.": "Thank you. We will review your report.",
+  "No se pudo enviar el reporte.": "Could not send the report.",
+  "Reporte no válido.": "Invalid report.",
+  "Demasiados reportes hoy. Inténtalo más tarde.": "Too many reports today. Please try again later.",
+  "Política de privacidad": "Privacy policy",
+  "Eliminar cuenta desde la web": "Delete account from the web",
+  "Motor de búsqueda": "Search engine",
+  "Con Google, tu pregunta y los últimos mensajes se envían a Google (Gemini). En el nivel gratuito, Google puede usarlos para mejorar sus productos. Los adjuntos nunca se envían a Google.": "With Google, your question and the latest messages are sent to Google (Gemini). On the free tier, Google may use them to improve its products. Attachments are never sent to Google.",
+  "Sugerencias de búsqueda de Google": "Google Search suggestions",
   "Quitar adjunto": "Remove attachment",
   "Escribe tu mensaje a Orya IA...": "Type your message to Orya IA...",
   "Escribe tu mensaje": "Type your message",
   "Adjuntar imagen o archivo de texto": "Attach an image or text file",
   "Adjuntar archivo": "Attach file",
   "Tomar una foto": "Take a photo",
-  "Buscar en Wikipedia antes de responder": "Search Wikipedia before answering",
+  "Buscar en la web antes de responder": "Search the web before answering",
   "Enviar mensaje": "Send message",
   "Orya IA puede equivocarse. Verifica la información importante. Tus conversaciones se guardan en tu cuenta.": "Orya IA can make mistakes. Verify important information. Your conversations are saved in your account.",
   "Nueva conversación": "New conversation",
@@ -508,7 +569,7 @@
   "Eliminar chat": "Delete chat",
   "Describe esta imagen.": "Describe this image.",
   "Analiza este archivo y dame un resumen.": "Analyze this file and give me a summary.",
-  "Buscando en Wikipedia y pensando…": "Searching Wikipedia and thinking…",
+  "Buscando en la web y pensando…": "Searching the web and thinking…",
   "Pensando…": "Thinking…",
   "No se pudo obtener respuesta: ": "Could not get a response: ",
   "respuesta inesperada": "unexpected response",
@@ -745,6 +806,24 @@
         appendLinkified(text, displayText(message.text));
 
         body.append(label, text);
+        if (message.suggestions) {
+          const frame = document.createElement("iframe");
+          frame.className = "suggestions-frame";
+          frame.setAttribute("sandbox", "allow-popups allow-popups-to-escape-sandbox");
+          frame.setAttribute("referrerpolicy", "no-referrer");
+          frame.setAttribute("title", t("Sugerencias de búsqueda de Google"));
+          frame.srcdoc = message.suggestions;
+          body.append(frame);
+        }
+        if (message.role !== "user" && !message.pending && !message.error) {
+          const report = document.createElement("button");
+          report.type = "button";
+          report.className = "report-btn";
+          report.textContent = "⚑ " + t("Reportar");
+          report.setAttribute("aria-label", t("Reportar esta respuesta"));
+          report.addEventListener("click", () => openReport(message.text));
+          body.append(report);
+        }
         row.appendChild(body);
         messages.appendChild(row);
       });
@@ -773,7 +852,7 @@
         conversation.title = cleanText.length > 32 ? cleanText.slice(0, 32) + "…" : cleanText;
       }
 
-      const reply = { role: "assistant", text: webSearch ? t("Buscando en Wikipedia y pensando…") : t("Pensando…"), pending: true };
+      const reply = { role: "assistant", text: webSearch ? t("Buscando en la web y pensando…") : t("Pensando…"), pending: true };
       conversation.messages.push(reply);
 
       promptInput.value = "";
@@ -788,7 +867,7 @@
         const response = await fetch(ORYA_API + "/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch, attachment: attached })
+          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"), attachment: attached })
         });
         const data = await response.json();
 
@@ -802,6 +881,7 @@
 
         if (response.ok && data.reply) {
           reply.text = data.reply;
+          reply.suggestions = typeof data.searchSuggestions === "string" ? data.searchSuggestions : "";
           conversation.saved = true;
         } else {
           reply.text = t("No se pudo obtener respuesta: ") + (t(data.error) || t("respuesta inesperada"));
@@ -890,7 +970,7 @@
       renderMessages();
     }
 
-    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", uiLanguage: "auto", theme: "dark", accent: "orange" };
+    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", uiLanguage: "auto", searchEngine: "wikipedia", autoSearch: true, theme: "dark", accent: "orange" };
     let settings = { ...DEFAULT_SETTINGS };
     try { settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("orya_settings") || "{}") }; } catch (e) {}
 
@@ -919,12 +999,19 @@
       } catch (e) {}
     }
 
+    function updateSupportNote() {
+      $("#supportNote").hidden = $("#setPersonality").value !== "support";
+    }
+    $("#setPersonality").addEventListener("change", updateSupportNote);
+
     function readSettingsForm() {
       return {
         assistantName: $("#setName").value.trim() || "Orya",
         personality: $("#setPersonality").value,
         customInstructions: $("#setCustom").value.trim(),
         replyLanguage: $("#setLang").value,
+        searchEngine: $("#setSearch").value,
+        autoSearch: $("#setAuto").checked,
         uiLanguage: $("#setUiLang").value,
         theme: $("#setTheme").value,
         accent: $("#setAccent").value
@@ -941,6 +1028,9 @@
       $("#setPersonality").value = settings.personality;
       $("#setCustom").value = settings.customInstructions;
       $("#setLang").value = settings.replyLanguage;
+      $("#setSearch").value = settings.searchEngine || "wikipedia";
+      $("#setAuto").checked = settings.autoSearch !== false;
+      updateSupportNote();
       $("#setUiLang").value = settings.uiLanguage;
       $("#setTheme").value = settings.theme;
       $("#setAccent").value = settings.accent;
@@ -1126,6 +1216,52 @@
         }
       } catch (e) {
         $("#settingsMsg").textContent = t("No se pudo conectar con el servidor.");
+      }
+    });
+
+    let reportTarget = null;
+
+    function openReport(text) {
+      reportTarget = text;
+      $("#reportCategory").value = "inaccurate";
+      $("#reportComment").value = "";
+      $("#reportMsg").textContent = "";
+      $("#reportSend").disabled = false;
+      $("#reportModal").hidden = false;
+    }
+
+    $("#reportClose").addEventListener("click", () => { $("#reportModal").hidden = true; });
+
+    $("#reportForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!reportTarget || !token) return;
+      const button = $("#reportSend");
+      button.disabled = true;
+      const conversation = getActive();
+      try {
+        const response = await fetch(ORYA_API + "/report", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            category: $("#reportCategory").value,
+            comment: $("#reportComment").value.trim(),
+            content: String(reportTarget).slice(0, 4000),
+            conversation_id: conversation && conversation.saved ? conversation.id : null
+          })
+        });
+        if (response.status === 401) { $("#reportModal").hidden = true; clearSession(); return; }
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (response.ok) {
+          $("#reportMsg").textContent = t("Gracias. Revisaremos tu reporte.");
+          setTimeout(() => { $("#reportModal").hidden = true; }, 1300);
+        } else {
+          $("#reportMsg").textContent = t(data.error || "No se pudo enviar el reporte.");
+          button.disabled = false;
+        }
+      } catch (e) {
+        $("#reportMsg").textContent = t("No se pudo conectar con el servidor.");
+        button.disabled = false;
       }
     });
 
