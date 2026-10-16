@@ -232,6 +232,58 @@
     .report-btn { margin-top: 6px; padding: 2px 6px; background: transparent; border: 0; color: var(--muted); font-size: 11px; }
     .report-btn:hover { color: var(--text); }
     .auth-sub a { color: var(--blue); }
+
+    .landing { position: fixed; inset: 0; z-index: 45; overflow-y: auto; background: radial-gradient(1000px 500px at 50% -10%, color-mix(in srgb, var(--orange) 16%, transparent), transparent), radial-gradient(800px 500px at 90% 30%, color-mix(in srgb, var(--blue) 12%, transparent), transparent), var(--bg); }
+    .landing[hidden] { display: none; }
+    .landing-inner { width: min(980px, 100%); margin: 0 auto; padding: 48px 22px 64px; }
+    .landing-hero { text-align: center; padding: 8px 0 40px; }
+    .landing-hero .logo-img { width: clamp(150px, 34vw, 230px); height: auto; aspect-ratio: 1; object-fit: contain; }
+    .landing-hero h1 { margin: 6px 0 0; font-size: clamp(34px, 7vw, 54px); letter-spacing: -1.6px; }
+    .slogan { margin: 10px 0 0; font-size: clamp(18px, 3.4vw, 24px); font-weight: 650; background: linear-gradient(90deg, var(--orange), var(--orange2), var(--blue)); color: transparent; background-clip: text; -webkit-background-clip: text; }
+    .landing-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 28px; }
+    .landing-actions button { min-width: 180px; padding: 14px 22px; border-radius: 14px; font-weight: 650; }
+    .landing-actions .new-chat { width: auto; }
+    .landing-secondary { color: var(--text); background: transparent; border: 1px solid var(--border2); }
+    .landing-secondary:hover { background: var(--panel2); }
+    .landing-note { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
+    .landing-specs h2 { margin: 0 0 18px; text-align: center; font-size: 24px; letter-spacing: -.6px; }
+    .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+    .spec-card { padding: 18px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+    .spec-card h3 { margin: 0 0 8px; font-size: 16px; }
+    .spec-card p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.7; }
+    .spec-card.limits { border-color: color-mix(in srgb, var(--orange) 45%, var(--border)); }
+    .splash { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--bg); transition: opacity .5s ease; }
+    .splash.hide { opacity: 0; pointer-events: none; }
+    .splash-inner { text-align: center; padding: 20px; }
+    .splash .logo-img { width: clamp(170px, 46vw, 260px); height: auto; aspect-ratio: 1; object-fit: contain; }
+    .splash-slogan { margin: 12px 0 0; font-size: clamp(20px, 5vw, 28px); font-weight: 650; background: linear-gradient(90deg, var(--orange), var(--orange2), var(--blue)); color: transparent; background-clip: text; -webkit-background-clip: text; }
+    @media (prefers-reduced-motion: reduce) { .splash { transition: none; } }
+    .msg-thumb { display: block; max-width: 220px; max-height: 220px; margin-bottom: 8px; border-radius: 12px; border: 1px solid var(--border); }
+
+    .landing-inner { position: relative; z-index: 1; }
+    .orb { position: fixed; z-index: 0; border-radius: 50%; filter: blur(70px); opacity: .32; pointer-events: none; }
+    .orb1 { width: 340px; height: 340px; left: -80px; top: 12%; background: var(--orange); animation: drift 14s ease-in-out infinite alternate; }
+    .orb2 { width: 380px; height: 380px; right: -110px; top: 48%; background: var(--blue); animation: drift 18s ease-in-out infinite alternate-reverse; }
+    @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(60px, -50px) scale(1.18); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+    @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes shimmer { to { background-position: 200% center; } }
+    @keyframes bounceY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+    .landing-hero .logo-img { animation: fadeUp .9s cubic-bezier(.2, .7, .2, 1) both, floaty 6s ease-in-out 1.2s infinite; }
+    .landing-hero h1 { animation: fadeUp .9s .15s cubic-bezier(.2, .7, .2, 1) both; }
+    .landing-hero .slogan { background-image: linear-gradient(90deg, var(--orange), var(--orange2), var(--blue), var(--orange2), var(--orange)); background-size: 200% auto; animation: fadeUp .9s .3s cubic-bezier(.2, .7, .2, 1) both, shimmer 7s linear 1.4s infinite; }
+    .landing-hero .landing-actions { animation: fadeUp .9s .45s cubic-bezier(.2, .7, .2, 1) both; }
+    .landing-hero .landing-note { animation: fadeUp .9s .6s cubic-bezier(.2, .7, .2, 1) both; }
+    .scroll-hint { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 30px; padding: 8px 14px; color: var(--muted); background: transparent; border: 0; font-size: 13px; animation: fadeUp .9s .8s both; }
+    .scroll-hint span:last-child { font-size: 20px; animation: bounceY 1.6s ease-in-out infinite; }
+    .reveal { opacity: 0; transform: translateY(32px) scale(.97); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+    .reveal.in { opacity: 1; transform: none; }
+    .spec-card.in:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--orange) 55%, var(--border)); }
+    .landing-version { margin: 36px 0 0; text-align: center; color: var(--muted); font-size: 12px; }
+    @media (prefers-reduced-motion: reduce) {
+      .orb, .landing-hero .logo-img, .landing-hero h1, .landing-hero .slogan, .landing-hero .landing-actions, .landing-hero .landing-note, .scroll-hint, .scroll-hint span:last-child { animation: none !important; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
   </style>
 </head>
 
@@ -250,6 +302,7 @@
       <button class="new-chat" id="authSubmit" type="submit">Entrar</button>
       <button class="auth-switch" id="authSwitch" type="button">¿No tienes cuenta? Crear una</button>
       <button class="auth-switch" id="forgotBtn" type="button">¿Olvidaste tu contraseña?</button>
+      <button class="auth-switch" id="authBack" type="button">← Volver</button>
       <p class="auth-sub"><a href="privacy.html" target="_blank" rel="noopener">Política de privacidad</a></p>
     </form>
   </div>
@@ -284,10 +337,10 @@
       </select>
       <label for="setSearch">Motor de búsqueda</label>
       <select id="setSearch">
-        <option value="wikipedia">Wikipedia (privado)</option>
-        <option value="google">Google (Gemini)</option>
+        <option value="google">Google Search</option>
+        <option value="wikipedia">Wikipedia</option>
       </select>
-      <p class="auth-sub">Con Google, tu pregunta y los últimos mensajes se envían a Google (Gemini) para buscar información actual. En el nivel gratuito, Google puede usarlos para mejorar sus productos. Los adjuntos nunca se envían a Google. Si Google no está disponible, Orya usa Wikipedia.</p>
+      <p class="auth-sub">Con Google, Orya busca con Google Search a través de Gemini y muestra las fuentes. Con Wikipedia, busca en Wikipedia y se lo pasa a Gemini. En ambos casos tus mensajes y archivos los procesa Gemini (Google); en el nivel gratuito, Google puede usarlos para mejorar sus productos.</p>
       <div hidden>
       <label class="recovery-check"><input type="checkbox" id="setAuto"> Buscar automáticamente en Wikipedia cuando la pregunta lo necesite</label>
       </div>
@@ -363,6 +416,45 @@
     </form>
   </div>
 
+  <div class="splash" id="splash" aria-hidden="true">
+    <div class="splash-inner">
+      <img class="logo-img" src="" alt="">
+      <p class="splash-slogan">Donde el conocimiento fluye</p>
+    </div>
+  </div>
+
+  <div class="landing" id="landing" hidden>
+    <span class="orb orb1" aria-hidden="true"></span>
+    <span class="orb orb2" aria-hidden="true"></span>
+    <div class="landing-inner">
+      <header class="landing-hero">
+        <img class="logo-img" src="" alt="Orya IA">
+        <h1>Orya IA</h1>
+        <p class="slogan">Donde el conocimiento fluye</p>
+        <div class="landing-actions">
+          <button class="new-chat" id="landingLogin" type="button">Iniciar sesión</button>
+          <button class="landing-secondary" id="landingRegister" type="button">Crear cuenta</button>
+        </div>
+        <p class="landing-note">Sin correo electrónico: solo usuario y contraseña.</p>
+        <button class="scroll-hint" id="scrollHint" type="button"><span>Desliza para conocer más</span><span aria-hidden="true">↓</span></button>
+      </header>
+      <section class="landing-specs">
+        <h2>Conoce a Orya</h2>
+        <div class="spec-grid">
+          <article class="spec-card"><h3><span aria-hidden="true">🧠</span> Cerebro</h3><p>Orya funciona con Gemini, el modelo de inteligencia artificial de Google, y entiende texto, imágenes y documentos. Para información actual puede usar Google Search o Wikipedia.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">💬</span> Conversación</h3><p>Recuerda el hilo de la charla y guarda tus conversaciones en tu cuenta, para retomarlas desde otro dispositivo.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">📎</span> Archivos y cámara</h3><p>Adjunta imágenes, PDF, Word, Excel o archivos de texto, o toma una foto con la cámara, y pídele que los analice.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">🌐</span> Información actual</h3><p>Puede buscar en Google Search o en Wikipedia, según elijas en la configuración, y muestra los enlaces de las fuentes para que puedas verificarlas.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">🕒</span> Fecha y hora</h3><p>Conoce la fecha, la hora y el calendario de tu zona horaria.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">🫶</span> Acompañamiento</h3><p>Ofrece un modo de acompañamiento emocional que escucha y orienta. No es un psicólogo ni sustituye a un profesional.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">🌍</span> Idiomas y estilo</h3><p>Interfaz y respuestas en español o inglés, con tema claro u oscuro y el color que prefieras.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">🔒</span> Privacidad</h3><p>Tu cuenta usa usuario y contraseña, sin correo. Puedes borrar tus chats o tu cuenta cuando quieras. Tus mensajes y archivos los procesa Gemini, de Google.</p></article>
+        </div>
+      </section>
+      <p class="landing-version">Orya IA · v1.0</p>
+    </div>
+  </div>
+
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
@@ -385,7 +477,7 @@
           <div class="avatar">O</div>
           <div>
             <div class="profile-name" id="profileName">Mi espacio</div>
-            <div class="profile-type">Versión inicial</div>
+            <div class="profile-type">v1.0</div>
           </div>
           <button class="auth-switch" id="settingsBtn" type="button" aria-label="Configuración" hidden>⚙</button>
           <button class="auth-switch" id="logoutBtn" type="button" hidden>Salir</button>
@@ -432,7 +524,7 @@
             <span id="attachName"></span>
             <button id="attachRemove" type="button" aria-label="Quitar adjunto">✕</button>
           </div>
-          <input type="file" id="fileInput" hidden accept="image/*,.txt,.md,.csv,.json,.html,.css,.js,.py,.xml,.log,text/plain">
+          <input type="file" id="fileInput" hidden accept="image/*,.pdf,.docx,.xlsx,.xlsm,.xlsb,.xls,.txt,.md,.csv,.json,.html,.css,.js,.py,.xml,.log,text/plain">
           <form class="composer" id="chatForm">
             <textarea id="prompt" rows="1" aria-label="Escribe tu mensaje" placeholder="Escribe tu mensaje a Orya IA..."></textarea>
             <button class="tool-btn" id="attachBtn" type="button" title="Adjuntar imagen o archivo de texto" aria-label="Adjuntar archivo">📎</button>
@@ -526,9 +618,46 @@
   "Ayúdame a organizar un plan para alcanzar un objetivo.": "Help me organize a plan to reach a goal.",
   "Dame ideas creativas para una página web moderna.": "Give me creative ideas for a modern website.",
   "Tú": "You",
+  "Desliza para conocer más": "Scroll to learn more",
+  "Orya alcanzó el límite de uso de Gemini. Inténtalo en unos minutos.": "Orya reached the Gemini usage limit. Please try again in a few minutes.",
+  "La IA todavía no está configurada.": "The AI is not set up yet.",
+  "No se pudo analizar la imagen. Puede que sea demasiado grande o que el modelo no la admita.": "Could not analyze the image. It may be too large or the model may not support it.",
+  "El PDF no es válido o es demasiado grande.": "The PDF is invalid or too large.",
+  "El documento es demasiado grande (máximo 4 MB).": "The document is too large (4 MB maximum).",
+  "No se pudo leer el documento.": "Could not read the document.",
+  "El documento es largo: solo se analizarán los primeros caracteres.": "The document is long: only the first characters will be analyzed.",
+  "Espera a que termine de procesarse el documento.": "Wait for the document to finish processing.",
+  "Tipo de archivo no admitido. Usa PDF, Word (.docx) o Excel (.xlsx, .xls).": "File type not supported. Use PDF, Word (.docx) or Excel (.xlsx, .xls).",
+  "No se pudo leer el documento. Puede estar protegido, dañado o ser un escaneo sin texto.": "Could not read the document. It may be protected, damaged or a scan without text.",
+  "No se pudo convertir el documento.": "Could not convert the document.",
+  "No se encontró texto en el documento (¿es un escaneo o una imagen?).": "No text found in the document (is it a scan or an image?).",
+  "Demasiados documentos en poco tiempo. Inténtalo más tarde.": "Too many documents in a short time. Please try again later.",
+  "Donde el conocimiento fluye": "Where knowledge flows",
+  "Iniciar sesión": "Log in",
+  "Sin correo electrónico: solo usuario y contraseña.": "No email needed: just a username and password.",
+  "Conoce a Orya": "Meet Orya",
+  "Cerebro": "Brain",
+  "Orya funciona con Gemini, el modelo de inteligencia artificial de Google, y entiende texto, imágenes y documentos. Para información actual puede usar Google Search o Wikipedia.": "Orya runs on Gemini, Google's artificial intelligence model, and understands text, images and documents. For current information it can use Google Search or Wikipedia.",
+  "Conversación": "Conversation",
+  "Recuerda el hilo de la charla y guarda tus conversaciones en tu cuenta, para retomarlas desde otro dispositivo.": "It remembers the thread of the chat and saves your conversations in your account, so you can pick them up from another device.",
+  "Archivos y cámara": "Files and camera",
+  "Adjunta imágenes, PDF, Word, Excel o archivos de texto, o toma una foto con la cámara, y pídele que los analice.": "Attach images, PDF, Word, Excel or text files, or take a photo with the camera, and ask it to analyze them.",
+  "Información actual": "Current information",
+  "Puede buscar en Google Search o en Wikipedia, según elijas en la configuración, y muestra los enlaces de las fuentes para que puedas verificarlas.": "It can search with Google Search or Wikipedia, depending on what you choose in settings, and it shows source links so you can verify them.",
+  "Fecha y hora": "Date and time",
+  "Conoce la fecha, la hora y el calendario de tu zona horaria.": "It knows the date, the time and the calendar for your time zone.",
+  "Acompañamiento": "Support",
+  "Ofrece un modo de acompañamiento emocional que escucha y orienta. No es un psicólogo ni sustituye a un profesional.": "It offers an emotional support mode that listens and guides. It is not a psychologist and does not replace a professional.",
+  "Idiomas y estilo": "Languages and style",
+  "Interfaz y respuestas en español o inglés, con tema claro u oscuro y el color que prefieras.": "Interface and replies in Spanish or English, with a light or dark theme and the color you prefer.",
+  "Privacidad": "Privacy",
+  "Tu cuenta usa usuario y contraseña, sin correo. Puedes borrar tus chats o tu cuenta cuando quieras. Tus mensajes y archivos los procesa Gemini, de Google.": "Your account uses a username and password, no email. You can delete your chats or your account whenever you want. Your messages and files are processed by Gemini, from Google.",
+  "Límites": "Limits",
+  "Puede equivocarse: verifica los datos importantes. Los documentos largos se recortan, no lee escaneos sin texto, y las imágenes no se guardan completas en la conversación.": "It can make mistakes: verify important facts. Long documents are cut short, it cannot read scans without text, and images are not fully saved in the conversation.",
+  "← Volver": "← Back",
   "Motor de búsqueda": "Search engine",
   "Wikipedia (privado)": "Wikipedia (private)",
-  "Con Google, tu pregunta y los últimos mensajes se envían a Google (Gemini) para buscar información actual. En el nivel gratuito, Google puede usarlos para mejorar sus productos. Los adjuntos nunca se envían a Google. Si Google no está disponible, Orya usa Wikipedia.": "With Google, your question and the latest messages are sent to Google (Gemini) to look up current information. On the free tier, Google may use them to improve its products. Attachments are never sent to Google. If Google is unavailable, Orya uses Wikipedia.",
+  "Con Google, Orya busca con Google Search a través de Gemini y muestra las fuentes. Con Wikipedia, busca en Wikipedia y se lo pasa a Gemini. En ambos casos tus mensajes y archivos los procesa Gemini (Google); en el nivel gratuito, Google puede usarlos para mejorar sus productos.": "With Google, Orya searches with Google Search through Gemini and shows the sources. With Wikipedia, it searches Wikipedia and passes the results to Gemini. In both cases your messages and files are processed by Gemini (Google); on the free tier, Google may use them to improve its products.",
   "Apoyo emocional": "Emotional support",
   "En este modo Orya ofrece escucha y herramientas de bienestar, pero es una IA: no es psicólogo ni sustituye a un profesional de salud mental. Si estás en peligro o piensas en hacerte daño, contacta ya con los servicios de emergencia de tu país.": "In this mode Orya offers listening and wellbeing tools, but it is an AI: it is not a psychologist and does not replace a mental health professional. If you are in danger or thinking about harming yourself, contact your country's emergency services right away.",
   "Buscar automáticamente en Wikipedia cuando la pregunta lo necesite": "Search Wikipedia automatically when a question needs it",
@@ -580,8 +709,8 @@
   "No se pudo conectar con el servidor.": "Could not connect to the server.",
   "El archivo es demasiado grande (máximo unos 300 KB).": "The file is too large (about 300 KB maximum).",
   "El archivo está vacío.": "The file is empty.",
-  "El archivo es largo: solo se enviarán los primeros 12.000 caracteres.": "The file is long: only the first 12,000 characters will be sent.",
-  "No se pudo leer ese archivo. Prueba con una imagen JPG o PNG, o con un archivo de texto.": "Could not read that file. Try a JPG or PNG image, or a text file.",
+  "El archivo es largo: solo se enviarán los primeros 120.000 caracteres.": "The file is long: only the first 120,000 characters will be sent.",
+  "No se pudo leer ese archivo. Prueba con una imagen JPG o PNG, un PDF, un documento de Word o Excel, o un archivo de texto.": "Could not read that file. Try a JPG or PNG image, a PDF, a Word or Excel document, or a text file.",
   "No se pudo acceder a la cámara. Revisa el permiso del navegador o usa 📎 para elegir una foto.": "Could not access the camera. Check the browser permission or use 📎 to choose a photo.",
   "Envía primero un mensaje para poder cambiar el nombre.": "Send a message first so you can rename the chat.",
   "Nuevo nombre del chat (máximo 60 caracteres):": "New chat name (60 characters max):",
@@ -803,6 +932,13 @@
 
         const text = document.createElement("div");
         text.className = "message-text";
+        if (message.thumb) {
+          const pic = document.createElement("img");
+          pic.className = "msg-thumb";
+          pic.alt = "";
+          pic.src = message.thumb;
+          body.append(pic);
+        }
         appendLinkified(text, displayText(message.text));
 
         body.append(label, text);
@@ -834,6 +970,7 @@
     }
 
     async function sendMessage(text) {
+      if (converting) { alert(t("Espera a que termine de procesarse el documento.")); return; }
       const attached = attachment;
       const cleanText = text.trim() || (attached ? (attached.kind === "image" ? t("Describe esta imagen.") : t("Analiza este archivo y dame un resumen.")) : "");
       if (!cleanText || sending) return;
@@ -844,9 +981,9 @@
       if (!conversation) return;
 
       const shownText = attached
-        ? cleanText + "\n\n" + (attached.kind === "image" ? "🖼️ [imagen adjunta]" : "📎 " + attached.name)
+        ? (attached.kind === "image" && attached.thumb ? cleanText : cleanText + "\n\n" + (attached.kind === "image" ? "🖼️ [imagen adjunta]" : (attached.doc ? "📄 " : "📎 ") + attached.name))
         : cleanText;
-      conversation.messages.push({ role: "user", text: shownText });
+      conversation.messages.push({ role: "user", text: shownText, thumb: attached && attached.kind === "image" ? attached.thumb : "" });
       clearAttachment();
       if (conversation.title === "Nueva conversación") {
         conversation.title = cleanText.length > 32 ? cleanText.slice(0, 32) + "…" : cleanText;
@@ -960,7 +1097,7 @@
           const response = await fetch(ORYA_API + "/conversations/" + id, { headers: { "Authorization": "Bearer " + token } });
           if (response.status === 401) { clearSession(); return; }
           const data = await response.json();
-          conversation.messages = (data.messages || []).map(m => ({ role: m.role, text: displayText(m.content) }));
+          conversation.messages = (data.messages || []).map(m => { const p = parseStored(m.content); return { role: m.role, text: p.text, thumb: p.thumb }; });
           conversation.loaded = true;
         } catch (e) {
           conversation.messages = [{ role: "assistant", text: t("No se pudo cargar la conversación."), error: true }];
@@ -970,7 +1107,7 @@
       renderMessages();
     }
 
-    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", uiLanguage: "auto", searchEngine: "wikipedia", autoSearch: true, theme: "dark", accent: "orange" };
+    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", uiLanguage: "auto", searchEngine: "google", autoSearch: true, theme: "dark", accent: "orange" };
     let settings = { ...DEFAULT_SETTINGS };
     try { settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("orya_settings") || "{}") }; } catch (e) {}
 
@@ -1028,7 +1165,7 @@
       $("#setPersonality").value = settings.personality;
       $("#setCustom").value = settings.customInstructions;
       $("#setLang").value = settings.replyLanguage;
-      $("#setSearch").value = settings.searchEngine || "wikipedia";
+      $("#setSearch").value = settings.searchEngine || "google";
       $("#setAuto").checked = settings.autoSearch !== false;
       updateSupportNote();
       $("#setUiLang").value = settings.uiLanguage;
@@ -1072,13 +1209,19 @@
 
     let attachment = null;
 
+    function parseStored(content) {
+      let thumb = "";
+      const text = String(content).replace(/\n*\[\[IMG\]\](data:image\/jpeg;base64,[A-Za-z0-9+\/=]+)\[\[\/IMG\]\]/, (all, data) => { thumb = data; return ""; });
+      return { text: displayText(text), thumb };
+    }
+
     function displayText(str) {
       return str.replace(/\[\[ADJUNTO:([^\]\n]{0,100})\]\][\s\S]*?\[\[\/ADJUNTO\]\]/g, "📎 $1");
     }
 
     function setAttachment(value) {
       attachment = value;
-      $("#attachName").textContent = (value.kind === "image" ? "🖼️ " : "📎 ") + value.name;
+      $("#attachName").textContent = (value.kind === "image" ? "🖼️ " : value.doc ? "📄 " : "📎 ") + value.name;
       $("#attachChip").hidden = false;
     }
 
@@ -1088,30 +1231,112 @@
       $("#fileInput").value = "";
     }
 
-    function imageToDataUrl(source, width, height) {
-      const scale = Math.min(1, 1024 / Math.max(width, height));
+    function renderJpeg(source, width, height, side, quality) {
+      const scale = Math.min(1, side / Math.max(width, height));
       const canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.round(width * scale));
       canvas.height = Math.max(1, Math.round(height * scale));
-      canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL("image/jpeg", 0.8);
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", quality);
+    }
+
+    function imageToDataUrl(source, width, height) {
+      let url = "";
+      for (const side of [1568, 1280, 1024, 768]) {
+        url = renderJpeg(source, width, height, side, 0.85);
+        if (url.length <= 1400000) break;
+      }
+      return url;
+    }
+
+    function imageToThumb(source, width, height) {
+      let url = "";
+      for (const side of [768, 640, 512, 384]) {
+        url = renderJpeg(source, width, height, side, 0.75);
+        if (url.length <= 200000) break;
+      }
+      return url;
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const DOC_EXTS = ["pdf", "docx", "xlsx", "xlsm", "xlsb", "xls"];
+    let converting = false;
+
+    async function convertDocument(file) {
+      if (file.size > 4 * 1024 * 1024) { alert(t("El documento es demasiado grande (máximo 4 MB).")); return; }
+      converting = true;
+      $("#attachName").textContent = "⏳ " + file.name.slice(0, 60);
+      $("#attachChip").hidden = false;
+      try {
+        const response = await fetch(ORYA_API + "/convert", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/octet-stream",
+            "X-File-Name": encodeURIComponent(file.name)
+          },
+          body: file
+        });
+        if (response.status === 401) { clearAttachment(); clearSession(); return; }
+        let data = {};
+        try { data = await response.json(); } catch (e) {}
+        if (!response.ok && data.code === "no_text" && /\.pdf$/i.test(file.name)) {
+          setAttachment({ kind: "pdf", name: file.name.slice(0, 60), data: await fileToBase64(file), doc: true });
+          return;
+        }
+        if (!response.ok || !data.text) {
+          clearAttachment();
+          alert(data.error ? t(data.error) : t("No se pudo leer el documento."));
+          return;
+        }
+        setAttachment({ kind: "text", name: data.name || file.name.slice(0, 60), text: data.text, doc: true });
+        if (data.truncated) alert(t("El documento es largo: solo se analizarán los primeros caracteres."));
+      } catch (e) {
+        clearAttachment();
+        alert(t("No se pudo conectar con el servidor."));
+      } finally {
+        converting = false;
+      }
     }
 
     async function handleFile(file) {
       if (!file) return;
+      if (converting) { alert(t("Espera a que termine de procesarse el documento.")); return; }
+      if (!token) { showAuth(); return; }
+      const ext = (file.name.split(".").pop() || "").toLowerCase();
       try {
         if (file.type.startsWith("image/")) {
-          const bitmap = await createImageBitmap(file);
-          setAttachment({ kind: "image", name: file.name.slice(0, 60), dataUrl: imageToDataUrl(bitmap, bitmap.width, bitmap.height) });
+          let bitmap;
+          try { bitmap = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+          catch (e) { bitmap = await createImageBitmap(file); }
+          setAttachment({
+            kind: "image",
+            name: file.name.slice(0, 60),
+            dataUrl: imageToDataUrl(bitmap, bitmap.width, bitmap.height),
+            thumb: imageToThumb(bitmap, bitmap.width, bitmap.height)
+          });
+        } else if (DOC_EXTS.includes(ext)) {
+          await convertDocument(file);
         } else {
           if (file.size > 300000) { alert(t("El archivo es demasiado grande (máximo unos 300 KB).")); return; }
           const content = await file.text();
           if (!content.trim()) { alert(t("El archivo está vacío.")); return; }
-          setAttachment({ kind: "text", name: file.name.slice(0, 60), text: content.slice(0, 12000) });
-          if (content.length > 12000) alert(t("El archivo es largo: solo se enviarán los primeros 12.000 caracteres."));
+          setAttachment({ kind: "text", name: file.name.slice(0, 60), text: content.slice(0, 120000) });
+          if (content.length > 120000) alert(t("El archivo es largo: solo se enviarán los primeros 120.000 caracteres."));
         }
       } catch (e) {
-        alert(t("No se pudo leer ese archivo. Prueba con una imagen JPG o PNG, o con un archivo de texto."));
+        alert(t("No se pudo leer ese archivo. Prueba con una imagen JPG o PNG, un PDF, un documento de Word o Excel, o un archivo de texto."));
       }
     }
 
@@ -1141,7 +1366,7 @@
     $("#camShot").addEventListener("click", () => {
       const video = $("#camVideo");
       if (!cameraStream || !video.videoWidth) return;
-      setAttachment({ kind: "image", name: "foto.jpg", dataUrl: imageToDataUrl(video, video.videoWidth, video.videoHeight) });
+      setAttachment({ kind: "image", name: "foto.jpg", dataUrl: imageToDataUrl(video, video.videoWidth, video.videoHeight), thumb: imageToThumb(video, video.videoWidth, video.videoHeight) });
       closeCamera();
     });
     $("#camClose").addEventListener("click", closeCamera);
@@ -1379,9 +1604,21 @@
     });
 
     function showAuth() {
+      $("#landing").hidden = false;
+    }
+
+    function openAuth(mode) {
+      setAuthMode(mode);
       $("#auth").hidden = false;
       $("#authUser").focus();
     }
+
+    $("#landingLogin").addEventListener("click", () => openAuth("login"));
+    $("#landingRegister").addEventListener("click", () => openAuth("register"));
+    $("#authBack").addEventListener("click", () => { $("#auth").hidden = true; });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !$("#auth").hidden) $("#auth").hidden = true;
+    });
 
     function applyUser() {
       $("#profileName").textContent = currentUser || t("Mi espacio");
@@ -1398,6 +1635,7 @@
         localStorage.setItem("orya_user", username);
       } catch (e) {}
       $("#auth").hidden = true;
+      $("#landing").hidden = true;
       applyUser();
       loadConversations();
     }
@@ -1473,6 +1711,37 @@
 
     renderHistory();
     initAuth();
+
+    (function () {
+      const landing = document.getElementById("landing");
+      const specs = landing.querySelector(".landing-specs");
+      document.getElementById("scrollHint").addEventListener("click", () => specs.scrollIntoView({ behavior: "smooth" }));
+      const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce || !("IntersectionObserver" in window)) return;
+      const items = landing.querySelectorAll(".landing-specs h2, .spec-card");
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) { entry.target.classList.add("in"); io.unobserve(entry.target); }
+        });
+      }, { root: landing, threshold: 0.15 });
+      items.forEach((el, i) => {
+        el.classList.add("reveal");
+        el.style.transitionDelay = ((i % 3) * 90) + "ms";
+        io.observe(el);
+      });
+    })();
+
+    (function () {
+      const splash = document.getElementById("splash");
+      if (!splash) return;
+      const reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const hide = () => {
+        splash.classList.add("hide");
+        setTimeout(() => splash.remove(), 600);
+      };
+      setTimeout(hide, reduced ? 600 : 1800);
+      splash.addEventListener("click", hide);
+    })();
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
