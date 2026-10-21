@@ -210,7 +210,7 @@
     .attach-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .attach-chip button { background: transparent; border: 0; color: var(--muted); font-size: 14px; }
     #camVideo { width: 100%; border-radius: 12px; background: #000; max-height: 50vh; }
-    @media (max-width: 700px) { .web-toggle, .tool-btn, .send-button { width: 38px; height: 38px; } }
+    @media (max-width: 700px) { .composer { gap: 6px; padding: 8px; } .web-toggle, .tool-btn, .send-button { width: 34px; height: 34px; font-size: 16px; } }
 
     .history-row { display: flex; align-items: center; gap: 2px; }
     .history-row .history-item { flex: 1; min-width: 0; }
@@ -284,6 +284,38 @@
       .orb, .landing-hero .logo-img, .landing-hero h1, .landing-hero .slogan, .landing-hero .landing-actions, .landing-hero .landing-note, .scroll-hint, .scroll-hint span:last-child { animation: none !important; }
       .reveal { opacity: 1; transform: none; transition: none; }
     }
+
+    .sidebar { position: sticky; top: 0; height: 100vh; height: 100dvh; align-self: flex-start; overflow-y: auto; }
+    .history-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .history-wrap .history-list { overflow-y: auto; min-height: 0; padding-right: 2px; }
+    @media (max-width: 700px) { .sidebar { position: fixed; height: auto; align-self: auto; } }
+
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+    .voice-pill { padding: 8px 14px; color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 999px; font-size: 13px; }
+    .voice-pill:hover { border-color: var(--orange); }
+    .tool-btn[aria-pressed="true"] { border-color: var(--orange); background: color-mix(in srgb, var(--orange) 18%, transparent); color: var(--text); animation: orbPulse 1.2s ease-in-out infinite; }
+    .speak-btn { margin: 6px 4px 0 0; padding: 2px 6px; background: transparent; border: 0; color: var(--muted); font-size: 12px; }
+    .speak-btn:hover { color: var(--text); }
+    .voice-overlay { position: fixed; inset: 0; z-index: 56; display: grid; place-items: center; padding: 20px; background: color-mix(in srgb, var(--bg) 93%, transparent); backdrop-filter: blur(8px); }
+    .voice-overlay[hidden] { display: none; }
+    .voice-card { width: min(420px, 100%); text-align: center; }
+    .voice-orb { width: 150px; height: 150px; margin: 0 auto 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--orange2), var(--orange) 55%, var(--blue)); box-shadow: 0 0 60px color-mix(in srgb, var(--orange) 45%, transparent); }
+    .voice-card[data-state="listening"] .voice-orb { animation: orbPulse 1.6s ease-in-out infinite; }
+    .voice-card[data-state="thinking"] .voice-orb { animation: orbSpin 1.2s linear infinite; filter: saturate(1.3); }
+    .voice-card[data-state="speaking"] .voice-orb { animation: orbWave .9s ease-in-out infinite; }
+    .voice-card[data-state="error"] .voice-orb { filter: grayscale(.8); }
+    @keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    @keyframes orbSpin { to { transform: rotate(360deg) scale(1.04); } }
+    @keyframes orbWave { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.08, .94); } 75% { transform: scale(.94, 1.08); } }
+    .voice-card h2 { margin: 0; font-size: 22px; }
+    .voice-hint { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .voice-status { margin: 14px 0 0; min-height: 22px; color: var(--text2); font-weight: 650; }
+    .voice-transcript { margin: 10px 0 0; min-height: 52px; color: var(--text); font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
+    .voice-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+    .voice-actions button { min-width: 140px; padding: 12px 18px; border-radius: 13px; font-weight: 650; }
+    .voice-actions .new-chat { width: auto; }
+    .voice-actions button:disabled { opacity: .45; cursor: not-allowed; }
+    @media (prefers-reduced-motion: reduce) { .voice-card .voice-orb, .tool-btn[aria-pressed="true"] { animation: none !important; } }
   </style>
 </head>
 
@@ -342,8 +374,25 @@
       </select>
       <p class="auth-sub">Con Google, Orya busca con Google Search a través de Gemini y muestra las fuentes. Con Wikipedia, busca en Wikipedia y se lo pasa a Gemini. En ambos casos tus mensajes y archivos los procesa Gemini (Google); en el nivel gratuito, Google puede usarlos para mejorar sus productos.</p>
       <div hidden>
-      <label class="recovery-check"><input type="checkbox" id="setAuto"> Buscar automáticamente en Wikipedia cuando la pregunta lo necesite</label>
+      <label class="recovery-check"><input type="checkbox" id="setAuto"> Buscar automáticamente en la web cuando la pregunta lo necesite</label>
       </div>
+      <label for="setVoice">Voz de Orya</label>
+      <select id="setVoice"></select>
+      <label for="setRate">Velocidad de la voz</label>
+      <input id="setRate" type="range" min="0.7" max="1.3" step="0.05" value="1">
+      <label for="setPitch">Tono de la voz</label>
+      <input id="setPitch" type="range" min="0.8" max="1.2" step="0.05" value="1">
+      <label for="setMicLang">Idioma del micrófono</label>
+      <select id="setMicLang">
+        <option value="auto">Automático (el de las respuestas)</option>
+        <option value="es-419">Español (Latinoamérica)</option>
+        <option value="es-ES">Español (España)</option>
+        <option value="en-US">English (US)</option>
+        <option value="en-GB">English (UK)</option>
+      </select>
+      <label class="recovery-check"><input type="checkbox" id="setAutoSpeak"> Leer las respuestas en voz alta</label>
+      <button class="auth-switch" id="voiceTest" type="button">▶ Probar la voz</button>
+      <p class="auth-sub">El dictado usa el servicio de reconocimiento de voz de tu navegador (en Chrome, el de Google). Las voces disponibles dependen de tu dispositivo.</p>
       <label for="setTheme">Tema</label>
       <select id="setTheme">
         <option value="dark">Oscuro</option>
@@ -444,6 +493,7 @@
           <article class="spec-card"><h3><span aria-hidden="true">🧠</span> Cerebro</h3><p>Orya funciona con Gemini, el modelo de inteligencia artificial de Google, y entiende texto, imágenes y documentos. Para información actual puede usar Google Search o Wikipedia.</p></article>
           <article class="spec-card"><h3><span aria-hidden="true">💬</span> Conversación</h3><p>Recuerda el hilo de la charla y guarda tus conversaciones en tu cuenta, para retomarlas desde otro dispositivo.</p></article>
           <article class="spec-card"><h3><span aria-hidden="true">📎</span> Archivos y cámara</h3><p>Adjunta imágenes, PDF, Word, Excel o archivos de texto, o toma una foto con la cámara, y pídele que los analice.</p></article>
+          <article class="spec-card"><h3><span aria-hidden="true">🎙️</span> Voz</h3><p>Dicta con tu voz, escucha las respuestas con la voz que elijas y conversa en voz alta con el modo voz, en los navegadores compatibles como Chrome, Edge y Safari.</p></article>
           <article class="spec-card"><h3><span aria-hidden="true">🌐</span> Información actual</h3><p>Puede buscar en Google Search o en Wikipedia, según elijas en la configuración, y muestra los enlaces de las fuentes para que puedas verificarlas.</p></article>
           <article class="spec-card"><h3><span aria-hidden="true">🕒</span> Fecha y hora</h3><p>Conoce la fecha, la hora y el calendario de tu zona horaria.</p></article>
           <article class="spec-card"><h3><span aria-hidden="true">🫶</span> Acompañamiento</h3><p>Ofrece un modo de acompañamiento emocional que escucha y orienta. No es un psicólogo ni sustituye a un profesional.</p></article>
@@ -452,6 +502,20 @@
         </div>
       </section>
       <p class="landing-version">Orya IA · v1.0</p>
+    </div>
+  </div>
+
+  <div class="voice-overlay" id="voiceOverlay" hidden role="dialog" aria-labelledby="voiceTitle">
+    <div class="voice-card" id="voiceCard" data-state="idle">
+      <div class="voice-orb" aria-hidden="true"></div>
+      <h2 id="voiceTitle">Modo voz</h2>
+      <p class="voice-hint">Habla con naturalidad: Orya te escucha, responde en voz alta y vuelve a escuchar.</p>
+      <p class="voice-status" id="voiceStatus" aria-live="polite"></p>
+      <p class="voice-transcript" id="voiceTranscript"></p>
+      <div class="voice-actions">
+        <button class="landing-secondary" id="voiceInterrupt" type="button" disabled>Interrumpir</button>
+        <button class="new-chat" id="voiceStop" type="button">Terminar</button>
+      </div>
     </div>
   </div>
 
@@ -467,7 +531,7 @@
 
       <button class="new-chat" id="newChat" type="button"><span>＋</span> Nueva conversación</button>
 
-      <div>
+      <div class="history-wrap">
         <div class="section-label">Tu espacio</div>
         <div class="history-list" id="historyList"></div>
       </div>
@@ -490,6 +554,9 @@
         <div class="topbar-left">
           <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Abrir menú">☰</button>
           <div class="topbar-title">Orya IA <small>/ Chat</small></div>
+        </div>
+        <div class="topbar-actions">
+          <button class="voice-pill" id="voiceModeBtn" type="button" title="Conversar con tu voz"><span aria-hidden="true">🗣️</span> Modo voz</button>
         </div>
       </header>
 
@@ -527,6 +594,7 @@
           <input type="file" id="fileInput" hidden accept="image/*,.pdf,.docx,.xlsx,.xlsm,.xlsb,.xls,.txt,.md,.csv,.json,.html,.css,.js,.py,.xml,.log,text/plain">
           <form class="composer" id="chatForm">
             <textarea id="prompt" rows="1" aria-label="Escribe tu mensaje" placeholder="Escribe tu mensaje a Orya IA..."></textarea>
+            <button class="tool-btn" id="micBtn" type="button" aria-pressed="false" title="Dictar con la voz" aria-label="Dictar con la voz">🎙️</button>
             <button class="tool-btn" id="attachBtn" type="button" title="Adjuntar imagen o archivo de texto" aria-label="Adjuntar archivo">📎</button>
             <button class="tool-btn" id="cameraBtn" type="button" title="Tomar una foto" aria-label="Tomar una foto">📷</button>
             <button class="web-toggle" id="webToggle" type="button" aria-pressed="false" title="Buscar en la web antes de responder" aria-label="Buscar en la web antes de responder">🌐</button>
@@ -618,6 +686,34 @@
   "Ayúdame a organizar un plan para alcanzar un objetivo.": "Help me organize a plan to reach a goal.",
   "Dame ideas creativas para una página web moderna.": "Give me creative ideas for a modern website.",
   "Tú": "You",
+  "Modo voz": "Voice mode",
+  "Conversar con tu voz": "Talk with your voice",
+  "Dictar con la voz": "Dictate with your voice",
+  "Habla con naturalidad: Orya te escucha, responde en voz alta y vuelve a escuchar.": "Speak naturally: Orya listens, answers out loud and listens again.",
+  "Escuchando…": "Listening…",
+  "Hablando…": "Speaking…",
+  "Hubo un problema. Reintentando…": "There was a problem. Trying again…",
+  "Interrumpir": "Interrupt",
+  "Terminar": "End",
+  "Voz de Orya": "Orya's voice",
+  "Velocidad de la voz": "Voice speed",
+  "Tono de la voz": "Voice pitch",
+  "Idioma del micrófono": "Microphone language",
+  "Automático (el de las respuestas)": "Automatic (same as replies)",
+  "Español (Latinoamérica)": "Spanish (Latin America)",
+  "Español (España)": "Spanish (Spain)",
+  "Leer las respuestas en voz alta": "Read replies out loud",
+  "▶ Probar la voz": "▶ Test the voice",
+  "El dictado usa el servicio de reconocimiento de voz de tu navegador (en Chrome, el de Google). Las voces disponibles dependen de tu dispositivo.": "Dictation uses your browser's speech recognition service (in Chrome, Google's). The available voices depend on your device.",
+  "Automática (según el idioma)": "Automatic (by language)",
+  "Escuchar": "Listen",
+  "Escuchar esta respuesta": "Listen to this reply",
+  "Tu navegador no admite el dictado por voz. Prueba con Chrome, Edge o Safari.": "Your browser does not support voice dictation. Try Chrome, Edge or Safari.",
+  "No tengo permiso para usar el micrófono. Actívalo en los ajustes del navegador.": "I don't have permission to use the microphone. Turn it on in your browser settings.",
+  "No se oyó nada, así que terminé el modo voz.": "I couldn't hear anything, so I ended voice mode.",
+  "Hubo varios problemas seguidos, así que terminé el modo voz.": "There were several problems in a row, so I ended voice mode.",
+  "Voz": "Voice",
+  "Dicta con tu voz, escucha las respuestas con la voz que elijas y conversa en voz alta con el modo voz, en los navegadores compatibles como Chrome, Edge y Safari.": "Dictate with your voice, listen to the replies in the voice you choose and talk out loud with voice mode, in compatible browsers such as Chrome, Edge and Safari.",
   "Desliza para conocer más": "Scroll to learn more",
   "Orya alcanzó el límite de uso de Gemini. Inténtalo en unos minutos.": "Orya reached the Gemini usage limit. Please try again in a few minutes.",
   "La IA todavía no está configurada.": "The AI is not set up yet.",
@@ -660,7 +756,7 @@
   "Con Google, Orya busca con Google Search a través de Gemini y muestra las fuentes. Con Wikipedia, busca en Wikipedia y se lo pasa a Gemini. En ambos casos tus mensajes y archivos los procesa Gemini (Google); en el nivel gratuito, Google puede usarlos para mejorar sus productos.": "With Google, Orya searches with Google Search through Gemini and shows the sources. With Wikipedia, it searches Wikipedia and passes the results to Gemini. In both cases your messages and files are processed by Gemini (Google); on the free tier, Google may use them to improve its products.",
   "Apoyo emocional": "Emotional support",
   "En este modo Orya ofrece escucha y herramientas de bienestar, pero es una IA: no es psicólogo ni sustituye a un profesional de salud mental. Si estás en peligro o piensas en hacerte daño, contacta ya con los servicios de emergencia de tu país.": "In this mode Orya offers listening and wellbeing tools, but it is an AI: it is not a psychologist and does not replace a mental health professional. If you are in danger or thinking about harming yourself, contact your country's emergency services right away.",
-  "Buscar automáticamente en Wikipedia cuando la pregunta lo necesite": "Search Wikipedia automatically when a question needs it",
+  "Buscar automáticamente en la web cuando la pregunta lo necesite": "Search the web automatically when a question needs it",
   "Orya alcanzó su límite diario de uso gratuito de IA. Se reinicia a las 00:00 UTC; inténtalo más tarde.": "Orya has reached its daily free AI usage limit. It resets at 00:00 UTC; please try again later.",
   "Cancelar": "Cancel",
   "Reportar": "Report",
@@ -787,7 +883,7 @@
 
     function translateDom(lang) {
       const map = lang === "en" ? EN : ES_FROM_EN;
-      const skip = "script, style, #messages, #historyList, #recoveryCode, #profileName, #attachName";
+      const skip = "script, style, #messages, #historyList, #recoveryCode, #profileName, #attachName, #voiceTranscript, #voiceStatus, #setVoice";
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       const nodes = [];
       while (walker.nextNode()) nodes.push(walker.currentNode);
@@ -952,6 +1048,16 @@
           body.append(frame);
         }
         if (message.role !== "user" && !message.pending && !message.error) {
+          if (synth) {
+            const listen = document.createElement("button");
+            listen.type = "button";
+            listen.className = "speak-btn";
+            listen.textContent = "🔊";
+            listen.title = t("Escuchar");
+            listen.setAttribute("aria-label", t("Escuchar esta respuesta"));
+            listen.addEventListener("click", () => { if (synth.speaking) stopSpeaking(); else speakText(message.text); });
+            body.append(listen);
+          }
           const report = document.createElement("button");
           report.type = "button";
           report.className = "report-btn";
@@ -969,16 +1075,19 @@
       });
     }
 
-    async function sendMessage(text) {
-      if (converting) { alert(t("Espera a que termine de procesarse el documento.")); return; }
+    async function sendMessage(text, options) {
+      options = options || {};
+      if (dictation) { try { dictation.stop(); } catch (e) {} }
+      if (!options.voice) stopSpeaking();
+      if (converting) { alert(t("Espera a que termine de procesarse el documento.")); return null; }
       const attached = attachment;
       const cleanText = text.trim() || (attached ? (attached.kind === "image" ? t("Describe esta imagen.") : t("Analiza este archivo y dame un resumen.")) : "");
-      if (!cleanText || sending) return;
-      if (!token) { showAuth(); return; }
+      if (!cleanText || sending) return null;
+      if (!token) { showAuth(); return null; }
 
       if (!activeId) newConversation();
       const conversation = getActive();
-      if (!conversation) return;
+      if (!conversation) return null;
 
       const shownText = attached
         ? (attached.kind === "image" && attached.thumb ? cleanText : cleanText + "\n\n" + (attached.kind === "image" ? "🖼️ [imagen adjunta]" : (attached.doc ? "📄 " : "📎 ") + attached.name))
@@ -1004,7 +1113,7 @@
         const response = await fetch(ORYA_API + "/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"), attachment: attached })
+          body: JSON.stringify({ conversation_id: conversation.id, message: cleanText, web: webSearch, tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"), attachment: attached, voice: options.voice === true })
         });
         const data = await response.json();
 
@@ -1013,7 +1122,7 @@
           clearSession();
           sending = false;
           sendButton.disabled = false;
-          return;
+          return null;
         }
 
         if (response.ok && data.reply) {
@@ -1033,7 +1142,9 @@
       sending = false;
       sendButton.disabled = false;
       renderMessages();
-      promptInput.focus();
+      if (!options.voice) promptInput.focus();
+      if (!reply.error && !options.voice && settings.autoSpeak) speakText(reply.text);
+      return reply.error ? null : reply.text;
     }
 
     form.addEventListener("submit", event => {
@@ -1107,7 +1218,7 @@
       renderMessages();
     }
 
-    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", uiLanguage: "auto", searchEngine: "google", autoSearch: true, theme: "dark", accent: "orange" };
+    const DEFAULT_SETTINGS = { assistantName: "Orya", personality: "balanced", customInstructions: "", replyLanguage: "es", uiLanguage: "auto", searchEngine: "google", autoSearch: true, theme: "dark", accent: "orange", voiceName: "", voiceRate: 1, voicePitch: 1, micLang: "auto", autoSpeak: false };
     let settings = { ...DEFAULT_SETTINGS };
     try { settings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem("orya_settings") || "{}") }; } catch (e) {}
 
@@ -1151,7 +1262,12 @@
         autoSearch: $("#setAuto").checked,
         uiLanguage: $("#setUiLang").value,
         theme: $("#setTheme").value,
-        accent: $("#setAccent").value
+        accent: $("#setAccent").value,
+        voiceName: $("#setVoice").value,
+        voiceRate: parseFloat($("#setRate").value) || 1,
+        voicePitch: parseFloat($("#setPitch").value) || 1,
+        micLang: $("#setMicLang").value,
+        autoSpeak: $("#setAutoSpeak").checked
       };
     }
 
@@ -1169,6 +1285,11 @@
       $("#setAuto").checked = settings.autoSearch !== false;
       updateSupportNote();
       $("#setUiLang").value = settings.uiLanguage;
+      populateVoices(settings.voiceName);
+      $("#setRate").value = settings.voiceRate || 1;
+      $("#setPitch").value = settings.voicePitch || 1;
+      $("#setMicLang").value = settings.micLang || "auto";
+      $("#setAutoSpeak").checked = settings.autoSpeak === true;
       $("#setTheme").value = settings.theme;
       $("#setAccent").value = settings.accent;
       $("#settingsMsg").textContent = "";
@@ -1490,6 +1611,343 @@
       }
     });
 
+    // ---------- Voz: dictado, lectura en voz alta y modo voz ----------
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    const synth = window.speechSynthesis || null;
+    let dictation = null;
+
+    function replyLangCode() {
+      return settings.replyLanguage === "auto" ? LANG : settings.replyLanguage;
+    }
+
+    function micLang() {
+      if (settings.micLang && settings.micLang !== "auto") return settings.micLang;
+      return replyLangCode() === "en" ? "en-US" : "es-419";
+    }
+
+    function cleanForSpeech(text) {
+      let out = String(text);
+      out = out.replace(/\n\n(?:Fuentes|Sources) \([^)]*\):[\s\S]*$/, "");
+      out = out.replace(/^\((?:No se pudo usar Google Search|Google Search was unavailable)[^)]*\)\s*/, "");
+      out = out.replace(/\((?:La respuesta se cortó|The reply was cut)[^)]*\)/g, "");
+      out = out.replace(/https?:\/\/\S+/g, "");
+      out = out.replace(/\[\d+\]/g, "");
+      out = out.replace(/^\s*(?:[-•*]|\d+[.)])\s+/gm, "");
+      out = out.replace(/[*_`#>~|]+/g, "");
+      out = out.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, "");
+      out = out.replace(/\n+/g, ". ").replace(/\.\s*\./g, ".").replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
+      return out;
+    }
+
+    function chunkForSpeech(text) {
+      const sentences = text.match(/[^.!?…]+[.!?…]*\s*/g) || [text];
+      const chunks = [];
+      let current = "";
+      for (const piece of sentences) {
+        if (current && (current + piece).length > 200) { chunks.push(current.trim()); current = piece; }
+        else current += piece;
+      }
+      if (current.trim()) chunks.push(current.trim());
+      const out = [];
+      for (const chunk of chunks) {
+        if (chunk.length <= 300) { out.push(chunk); continue; }
+        let rest = chunk;
+        while (rest.length > 300) {
+          let cut = rest.lastIndexOf(" ", 280);
+          if (cut < 100) cut = 280;
+          out.push(rest.slice(0, cut).trim());
+          rest = rest.slice(cut);
+        }
+        if (rest.trim()) out.push(rest.trim());
+      }
+      return out;
+    }
+
+    function guessLang(text) {
+      const es = (text.match(/[áéíóúñ¿¡]|\b(el|la|los|las|de|que|y|en|un|una|es|por|con|para|no|se|lo|como|más|pero|su|al|del)\b/gi) || []).length;
+      const en = (text.match(/\b(the|and|of|to|in|is|that|it|for|with|as|was|on|are|this|be|have|not|you|your|can)\b/gi) || []).length;
+      return en > es ? "en" : "es";
+    }
+
+    function pickVoice(voices, name, langPrefix) {
+      const list = Array.from(voices || []);
+      if (name) {
+        const exact = list.find(v => v.name === name);
+        if (exact && String(exact.lang).toLowerCase().startsWith(langPrefix)) return exact;
+      }
+      const byLang = list.filter(v => String(v.lang).toLowerCase().startsWith(langPrefix));
+      return byLang.find(v => v.default) || byLang[0] || null;
+    }
+
+    let speakToken = 0;
+
+    function stopSpeaking() {
+      speakToken += 1;
+      try { if (synth) synth.cancel(); } catch (e) {}
+    }
+
+    function unlockSpeech() {
+      try {
+        if (synth && typeof SpeechSynthesisUtterance !== "undefined") {
+          const silent = new SpeechSynthesisUtterance(" ");
+          silent.volume = 0;
+          synth.speak(silent);
+        }
+      } catch (e) {}
+    }
+
+    function speakText(text, opts) {
+      opts = opts || {};
+      if (!synth || typeof SpeechSynthesisUtterance === "undefined") return Promise.resolve();
+      const spoken = cleanForSpeech(text);
+      if (!spoken) return Promise.resolve();
+      const mine = ++speakToken;
+      try { synth.cancel(); } catch (e) {}
+      const lang = opts.lang || (settings.replyLanguage === "auto" ? guessLang(spoken) : settings.replyLanguage);
+      const voice = pickVoice(synth.getVoices(), opts.voiceName !== undefined ? opts.voiceName : settings.voiceName, lang);
+      const rate = opts.rate || settings.voiceRate || 1;
+      const pitch = opts.pitch || settings.voicePitch || 1;
+      const chunks = chunkForSpeech(spoken);
+      return new Promise(resolve => {
+        let index = 0;
+        const next = () => {
+          if (mine !== speakToken || index >= chunks.length) { resolve(); return; }
+          const piece = chunks[index++];
+          const utterance = new SpeechSynthesisUtterance(piece);
+          if (voice) { utterance.voice = voice; utterance.lang = voice.lang; }
+          else utterance.lang = lang === "en" ? "en-US" : "es-ES";
+          utterance.rate = rate;
+          utterance.pitch = pitch;
+          let finished = false;
+          let watchdog = null;
+          const finish = () => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(watchdog);
+            next();
+          };
+          watchdog = setTimeout(finish, 5000 + (piece.length * 130) / rate);
+          utterance.onend = finish;
+          utterance.onerror = finish;
+          try { synth.speak(utterance); } catch (e) { finish(); }
+        };
+        setTimeout(next, 60);
+      });
+    }
+
+    function populateVoices(selected) {
+      const select = $("#setVoice");
+      select.replaceChildren();
+      const auto = document.createElement("option");
+      auto.value = "";
+      auto.textContent = t("Automática (según el idioma)");
+      select.appendChild(auto);
+      if (!synth) return;
+      const voices = Array.from(synth.getVoices()).sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name));
+      const preferred = replyLangCode();
+      const ordered = voices.filter(v => v.lang.toLowerCase().startsWith(preferred)).concat(voices.filter(v => !v.lang.toLowerCase().startsWith(preferred)));
+      ordered.forEach(v => {
+        const option = document.createElement("option");
+        option.value = v.name;
+        option.textContent = v.name + " — " + v.lang;
+        select.appendChild(option);
+      });
+      select.value = selected && voices.some(v => v.name === selected) ? selected : "";
+    }
+
+    if (synth && synth.addEventListener) {
+      synth.addEventListener("voiceschanged", () => {
+        if (!$("#settingsModal").hidden) populateVoices($("#setVoice").value);
+      });
+    }
+
+    $("#voiceTest").addEventListener("click", () => {
+      const name = $("#setVoice").value;
+      const chosen = synth ? Array.from(synth.getVoices()).find(v => v.name === name) : null;
+      const lang = chosen ? chosen.lang.toLowerCase().slice(0, 2) : replyLangCode();
+      const sample = lang === "en"
+        ? "Hi, I'm " + $("#setName").value.trim() + ". This is how my voice sounds."
+        : "Hola, soy " + $("#setName").value.trim() + ". Así suena mi voz.";
+      speakText(sample, { voiceName: name, rate: parseFloat($("#setRate").value) || 1, pitch: parseFloat($("#setPitch").value) || 1, lang });
+    });
+
+    function toggleDictation() {
+      if (!SpeechRec) { alert(t("Tu navegador no admite el dictado por voz. Prueba con Chrome, Edge o Safari.")); return; }
+      if (dictation) { try { dictation.stop(); } catch (e) {} return; }
+      stopSpeaking();
+      const recognizer = new SpeechRec();
+      recognizer.lang = micLang();
+      recognizer.interimResults = true;
+      recognizer.continuous = false;
+      const base = promptInput.value ? promptInput.value.replace(/\s+$/, "") + " " : "";
+      recognizer.onresult = event => {
+        let heard = "";
+        for (let i = 0; i < event.results.length; i++) heard += event.results[i][0].transcript;
+        promptInput.value = base + heard;
+        promptInput.dispatchEvent(new Event("input"));
+      };
+      recognizer.onerror = event => {
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          alert(t("No tengo permiso para usar el micrófono. Actívalo en los ajustes del navegador."));
+        }
+      };
+      recognizer.onend = () => {
+        dictation = null;
+        $("#micBtn").setAttribute("aria-pressed", "false");
+        promptInput.focus();
+      };
+      dictation = recognizer;
+      $("#micBtn").setAttribute("aria-pressed", "true");
+      try { recognizer.start(); } catch (e) { dictation = null; $("#micBtn").setAttribute("aria-pressed", "false"); }
+    }
+
+    function createVoiceController(d) {
+      let active = false;
+      let state = "idle";
+      let rec = null;
+      let epoch = 0;
+      let silent = 0;
+      let failures = 0;
+
+      function setState(next) {
+        state = next;
+        d.onState(next);
+      }
+
+      function listen() {
+        if (!active) return;
+        const mine = ++epoch;
+        let finalText = "";
+        let interimText = "";
+        const recognizer = new d.SR();
+        rec = recognizer;
+        recognizer.lang = d.getLang();
+        recognizer.interimResults = true;
+        recognizer.continuous = false;
+        recognizer.maxAlternatives = 1;
+        recognizer.onresult = event => {
+          if (mine !== epoch) return;
+          finalText = "";
+          interimText = "";
+          for (let i = 0; i < event.results.length; i++) {
+            const part = event.results[i];
+            if (part.isFinal) finalText += part[0].transcript;
+            else interimText += part[0].transcript;
+          }
+          d.onTranscript((finalText + " " + interimText).trim());
+        };
+        recognizer.onerror = event => {
+          if (mine !== epoch) return;
+          if (event.error === "not-allowed" || event.error === "service-not-allowed") stop("denied");
+        };
+        recognizer.onend = () => {
+          if (mine !== epoch || !active) return;
+          const text = (finalText || interimText).trim();
+          if (!text) {
+            silent += 1;
+            if (silent >= 3) { stop("silence"); return; }
+            setTimeout(listen, 250);
+            return;
+          }
+          silent = 0;
+          handle(text);
+        };
+        d.onTranscript("");
+        setState("listening");
+        try {
+          recognizer.start();
+        } catch (e) {
+          failures += 1;
+          if (failures >= 3) { stop("error"); return; }
+          setTimeout(listen, 400);
+        }
+      }
+
+      async function handle(text) {
+        setState("thinking");
+        let reply = null;
+        try { reply = await d.send(text); } catch (e) { reply = null; }
+        if (!active) return;
+        if (reply === null) {
+          failures += 1;
+          if (failures >= 2) { stop("error"); return; }
+          setState("error");
+          setTimeout(listen, 1500);
+          return;
+        }
+        failures = 0;
+        setState("speaking");
+        try { await d.speak(reply); } catch (e) {}
+        if (!active) return;
+        listen();
+      }
+
+      function start() {
+        if (active) return;
+        active = true;
+        silent = 0;
+        failures = 0;
+        listen();
+      }
+
+      function stop(reason) {
+        if (!active) return;
+        active = false;
+        epoch += 1;
+        try { if (rec) rec.abort(); } catch (e) {}
+        d.stopSpeaking();
+        setState("idle");
+        d.onExit(reason || "user");
+      }
+
+      function interrupt() {
+        if (active && state === "speaking") d.stopSpeaking();
+      }
+
+      return { start, stop, interrupt, getState: () => state };
+    }
+
+    const voice = createVoiceController({
+      SR: SpeechRec,
+      getLang: micLang,
+      send: text => { $("#voiceTranscript").textContent = text; return sendMessage(text, { voice: true }); },
+      speak: reply => speakText(reply),
+      stopSpeaking,
+      onState: state => {
+        const labels = { listening: "Escuchando…", thinking: "Pensando…", speaking: "Hablando…", error: "Hubo un problema. Reintentando…" };
+        $("#voiceCard").dataset.state = state;
+        $("#voiceStatus").textContent = labels[state] ? t(labels[state]) : "";
+        $("#voiceInterrupt").disabled = state !== "speaking";
+      },
+      onTranscript: text => { $("#voiceTranscript").textContent = text; },
+      onExit: reason => {
+        $("#voiceOverlay").hidden = true;
+        if (reason === "denied") alert(t("No tengo permiso para usar el micrófono. Actívalo en los ajustes del navegador."));
+        else if (reason === "silence") alert(t("No se oyó nada, así que terminé el modo voz."));
+        else if (reason === "error") alert(t("Hubo varios problemas seguidos, así que terminé el modo voz."));
+      }
+    });
+
+    function startVoiceMode() {
+      if (!SpeechRec) { alert(t("Tu navegador no admite el dictado por voz. Prueba con Chrome, Edge o Safari.")); return; }
+      if (!token) { showAuth(); return; }
+      if (dictation) { try { dictation.stop(); } catch (e) {} }
+      unlockSpeech();
+      $("#voiceTranscript").textContent = "";
+      $("#voiceOverlay").hidden = false;
+      voice.start();
+    }
+
+    $("#micBtn").hidden = !SpeechRec;
+    $("#voiceModeBtn").hidden = !SpeechRec;
+    $("#micBtn").addEventListener("click", toggleDictation);
+    $("#voiceModeBtn").addEventListener("click", startVoiceMode);
+    $("#voiceStop").addEventListener("click", () => voice.stop("user"));
+    $("#voiceInterrupt").addEventListener("click", () => voice.interrupt());
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !$("#voiceOverlay").hidden) voice.stop("user");
+    });
+
     let webSearch = false;
     $("#webToggle").addEventListener("click", () => {
       webSearch = !webSearch;
@@ -1641,6 +2099,8 @@
     }
 
     function clearSession() {
+      if (typeof voice !== "undefined") voice.stop("user");
+      stopSpeaking();
       token = null;
       currentUser = null;
       try {
