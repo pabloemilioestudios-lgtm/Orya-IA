@@ -392,6 +392,7 @@
       </select>
       <label class="recovery-check"><input type="checkbox" id="setAutoSpeak"> Leer las respuestas en voz alta</label>
       <button class="auth-switch" id="voiceTest" type="button">▶ Probar la voz</button>
+      <p class="auth-sub" id="voiceInfo"></p>
       <p class="auth-sub">El dictado usa el servicio de reconocimiento de voz de tu navegador (en Chrome, el de Google). Las voces disponibles dependen de tu dispositivo.</p>
       <label for="setTheme">Tema</label>
       <select id="setTheme">
@@ -686,6 +687,14 @@
   "Ayúdame a organizar un plan para alcanzar un objetivo.": "Help me organize a plan to reach a goal.",
   "Dame ideas creativas para una página web moderna.": "Give me creative ideas for a modern website.",
   "Tú": "You",
+  "Reproduciendo…": "Playing…",
+  "Este navegador no puede reproducir voz. Prueba con Chrome, Edge o Safari.": "This browser cannot play voice. Try Chrome, Edge or Safari.",
+  "El navegador bloqueó la voz. Toca de nuevo el botón 🔊 o revisa los permisos de sonido.": "The browser blocked the voice. Tap the 🔊 button again or check the sound permissions.",
+  "No hay salida de audio disponible. Revisa el volumen y que el dispositivo no esté en silencio.": "No audio output is available. Check the volume and that the device is not on silent.",
+  "No hay una voz disponible para ese idioma en este dispositivo. Elige otra voz en la configuración.": "There is no voice available for that language on this device. Choose another voice in settings.",
+  "No pude reproducir la voz. Comprueba el volumen y que el dispositivo no esté en modo silencio, y prueba con otra voz en la configuración.": "I couldn't play the voice. Check the volume and that the device is not in silent mode, and try another voice in settings.",
+  "No se encontraron voces en este navegador. Puede que tengas que instalar o activar una voz en los ajustes del sistema, o probar otro navegador.": "No voices were found in this browser. You may need to install or turn on a voice in the system settings, or try another browser.",
+  "Voces encontradas: ": "Voices found: ",
   "Modo voz": "Voice mode",
   "Conversar con tu voz": "Talk with your voice",
   "Dictar con la voz": "Dictate with your voice",
@@ -883,7 +892,7 @@
 
     function translateDom(lang) {
       const map = lang === "en" ? EN : ES_FROM_EN;
-      const skip = "script, style, #messages, #historyList, #recoveryCode, #profileName, #attachName, #voiceTranscript, #voiceStatus, #setVoice";
+      const skip = "script, style, #messages, #historyList, #recoveryCode, #profileName, #attachName, #voiceTranscript, #voiceStatus, #setVoice, #voiceInfo";
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       const nodes = [];
       while (walker.nextNode()) nodes.push(walker.currentNode);
@@ -1055,7 +1064,7 @@
             listen.textContent = "🔊";
             listen.title = t("Escuchar");
             listen.setAttribute("aria-label", t("Escuchar esta respuesta"));
-            listen.addEventListener("click", () => { if (synth.speaking) stopSpeaking(); else speakText(message.text); });
+            listen.addEventListener("click", () => { if (speakingNow) stopSpeaking(); else speakText(message.text).then(notifySpeechProblem); });
             body.append(listen);
           }
           const report = document.createElement("button");
@@ -1143,7 +1152,7 @@
       sendButton.disabled = false;
       renderMessages();
       if (!options.voice) promptInput.focus();
-      if (!reply.error && !options.voice && settings.autoSpeak) speakText(reply.text);
+      if (!reply.error && !options.voice && settings.autoSpeak) speakText(reply.text).then(notifySpeechProblem);
       return reply.error ? null : reply.text;
     }
 
@@ -1683,6 +1692,7 @@
 
     function stopSpeaking() {
       speakToken += 1;
+      speakingNow = false;
       try { if (synth) synth.cancel(); } catch (e) {}
     }
 
@@ -1696,28 +1706,39 @@
       } catch (e) {}
     }
 
+    let speakingNow = false;
+
+    // Devuelve una promesa que se resuelve con "" si todo fue bien, o con un código de problema
+    // ("not-allowed", "synthesis-failed", "no-start"...) para poder explicárselo a la persona.
     function speakText(text, opts) {
       opts = opts || {};
-      if (!synth || typeof SpeechSynthesisUtterance === "undefined") return Promise.resolve();
+      if (!synth || typeof SpeechSynthesisUtterance === "undefined") return Promise.resolve("unsupported");
       const spoken = cleanForSpeech(text);
-      if (!spoken) return Promise.resolve();
+      if (!spoken) return Promise.resolve("");
       const mine = ++speakToken;
       try { synth.cancel(); } catch (e) {}
       const lang = opts.lang || (settings.replyLanguage === "auto" ? guessLang(spoken) : settings.replyLanguage);
-      const voice = pickVoice(synth.getVoices(), opts.voiceName !== undefined ? opts.voiceName : settings.voiceName, lang);
+      const chosenVoice = pickVoice(synth.getVoices(), opts.voiceName !== undefined ? opts.voiceName : settings.voiceName, lang);
       const rate = opts.rate || settings.voiceRate || 1;
       const pitch = opts.pitch || settings.voicePitch || 1;
       const chunks = chunkForSpeech(spoken);
+      speakingNow = true;
       return new Promise(resolve => {
         let index = 0;
+        let problem = "";
+        const done = () => {
+          if (mine === speakToken) speakingNow = false;
+          resolve(problem);
+        };
         const next = () => {
-          if (mine !== speakToken || index >= chunks.length) { resolve(); return; }
+          if (mine !== speakToken || problem || index >= chunks.length) { done(); return; }
           const piece = chunks[index++];
           const utterance = new SpeechSynthesisUtterance(piece);
-          if (voice) { utterance.voice = voice; utterance.lang = voice.lang; }
+          if (chosenVoice) { utterance.voice = chosenVoice; utterance.lang = chosenVoice.lang; }
           else utterance.lang = lang === "en" ? "en-US" : "es-ES";
           utterance.rate = rate;
           utterance.pitch = pitch;
+          let started = false;
           let finished = false;
           let watchdog = null;
           const finish = () => {
@@ -1726,18 +1747,45 @@
             clearTimeout(watchdog);
             next();
           };
-          watchdog = setTimeout(finish, 5000 + (piece.length * 130) / rate);
+          watchdog = setTimeout(() => {
+            if (!started && mine === speakToken && !problem) problem = "no-start";
+            finish();
+          }, 5000 + (piece.length * 130) / rate);
+          utterance.onstart = () => { started = true; };
           utterance.onend = finish;
-          utterance.onerror = finish;
-          try { synth.speak(utterance); } catch (e) { finish(); }
+          utterance.onerror = event => {
+            const code = event && event.error;
+            if (code && code !== "canceled" && code !== "interrupted" && mine === speakToken) problem = code;
+            finish();
+          };
+          try { synth.speak(utterance); } catch (e) { problem = "synthesis-failed"; finish(); }
         };
         setTimeout(next, 60);
       });
     }
 
+    function explainSpeechProblem(code) {
+      if (code === "unsupported") return "Este navegador no puede reproducir voz. Prueba con Chrome, Edge o Safari.";
+      if (code === "not-allowed") return "El navegador bloqueó la voz. Toca de nuevo el botón 🔊 o revisa los permisos de sonido.";
+      if (code === "audio-busy" || code === "audio-hardware") return "No hay salida de audio disponible. Revisa el volumen y que el dispositivo no esté en silencio.";
+      if (code === "language-unavailable" || code === "voice-unavailable" || code === "synthesis-unavailable") return "No hay una voz disponible para ese idioma en este dispositivo. Elige otra voz en la configuración.";
+      return "No pude reproducir la voz. Comprueba el volumen y que el dispositivo no esté en modo silencio, y prueba con otra voz en la configuración.";
+    }
+
+    let speechProblemShown = false;
+    function notifySpeechProblem(code) {
+      if (!code) return;
+      const message = t(explainSpeechProblem(code));
+      if (!$("#settingsModal").hidden) { $("#settingsMsg").textContent = message; return; }
+      if (speechProblemShown) return;
+      speechProblemShown = true;
+      alert(message);
+    }
+
     function populateVoices(selected) {
       const select = $("#setVoice");
       select.replaceChildren();
+      if (!synth) showVoiceInfo(0);
       const auto = document.createElement("option");
       auto.value = "";
       auto.textContent = t("Automática (según el idioma)");
@@ -1753,6 +1801,17 @@
         select.appendChild(option);
       });
       select.value = selected && voices.some(v => v.name === selected) ? selected : "";
+      showVoiceInfo(voices.length);
+    }
+
+    function showVoiceInfo(count) {
+      const info = $("#voiceInfo");
+      if (!info) return;
+      info.textContent = !synth
+        ? t("Este navegador no puede reproducir voz. Prueba con Chrome, Edge o Safari.")
+        : count === 0
+          ? t("No se encontraron voces en este navegador. Puede que tengas que instalar o activar una voz en los ajustes del sistema, o probar otro navegador.")
+          : t("Voces encontradas: ") + count;
     }
 
     if (synth && synth.addEventListener) {
@@ -1768,7 +1827,9 @@
       const sample = lang === "en"
         ? "Hi, I'm " + $("#setName").value.trim() + ". This is how my voice sounds."
         : "Hola, soy " + $("#setName").value.trim() + ". Así suena mi voz.";
-      speakText(sample, { voiceName: name, rate: parseFloat($("#setRate").value) || 1, pitch: parseFloat($("#setPitch").value) || 1, lang });
+      $("#settingsMsg").textContent = t("Reproduciendo…");
+      speakText(sample, { voiceName: name, rate: parseFloat($("#setRate").value) || 1, pitch: parseFloat($("#setPitch").value) || 1, lang })
+        .then(problem => { $("#settingsMsg").textContent = problem ? t(explainSpeechProblem(problem)) : ""; });
     });
 
     function toggleDictation() {
@@ -1911,7 +1972,7 @@
       SR: SpeechRec,
       getLang: micLang,
       send: text => { $("#voiceTranscript").textContent = text; return sendMessage(text, { voice: true }); },
-      speak: reply => speakText(reply),
+      speak: reply => speakText(reply).then(notifySpeechProblem),
       stopSpeaking,
       onState: state => {
         const labels = { listening: "Escuchando…", thinking: "Pensando…", speaking: "Hablando…", error: "Hubo un problema. Reintentando…" };
